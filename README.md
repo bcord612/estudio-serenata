@@ -67,7 +67,9 @@ powershell -ExecutionPolicy Bypass -File serve.ps1
 
 - [ ] Decidir el nombre final y comprar dominio (ver conversación de marcas)
 - [ ] Reemplazar testimonios ilustrativos por clientes reales
-- [ ] Subir muestras MP3 reales (vals / cumbia / balada)
+- [x] Subir muestras MP3 reales (vals / cumbia / balada) — jul 2026:
+      "Mi Niña, Mi Reina" 4:26 · "Cincuenta Primaveras" 3:10 ·
+      "Veinte Otoños" 3:53 (convertidas de WAV a MP3 192 kbps)
 - [ ] Generar el clip Higgsfield para el héroe (`frames/hero/`)
 - [ ] Conectar el botón "Crear mi canción" al formulario/checkout existente
 - [ ] Poner el número real de WhatsApp en los enlaces `wa.me`

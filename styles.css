@@ -234,7 +234,7 @@ h2 { font-size: clamp(2rem, 4.6vw, 3.4rem); text-align: center; margin-bottom: 1
 .occasion-boda {
   background:
     linear-gradient(180deg, rgba(18,10,20,0.62), rgba(18,10,20,0.88) 72%),
-    url("img/boda-baile.jpg") center 18% / cover no-repeat;
+    url("img/boda-baile.jpg") center 35% / cover no-repeat;
 }
 .occasion-aniv {
   background:

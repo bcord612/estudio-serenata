@@ -256,6 +256,11 @@ h2 { font-size: clamp(2rem, 4.6vw, 3.4rem); text-align: center; margin-bottom: 1
     linear-gradient(180deg, rgba(18,10,20,0.62), rgba(18,10,20,0.88) 72%),
     url("img/negocio.jpg") center 30% / cover no-repeat;
 }
+.occasion-fiesta {
+  background:
+    linear-gradient(180deg, rgba(18,10,20,0.62), rgba(18,10,20,0.88) 72%),
+    url("img/fiesta.jpg") center 30% / cover no-repeat;
+}
 .occasion-hero h3 { font-size: 2.3rem; }
 .occasion-hero p { max-width: 560px; font-size: 1.05rem; }
 .occ-glow {

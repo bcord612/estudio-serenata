@@ -1,0 +1,74 @@
+# Estudio Serenata — sitio cinemático
+
+Prototipo de sitio "scroll-cinematic" para el negocio de canciones
+personalizadas (rebrand propuesto de songstorylab.com), enfocado al
+mercado hispano: quinceañeras, bodas, aniversarios, tributos.
+
+## Ver el sitio
+
+**Opción A (doble clic):** abre `index.html` directamente en el navegador.
+**Opción B (recomendada):**
+
+```powershell
+powershell -ExecutionPolicy Bypass -File serve.ps1
+# abre http://localhost:8765
+```
+
+## Qué tiene de especial
+
+- **Héroe scroll-scrubbed:** al hacer scroll, la escena se "reproduce" como
+  película (la técnica de los sitios de Apple). Hoy usa una escena generativa
+  en canvas (polvo dorado → onda de sonido → corazón → pétalos). Cuando
+  agregues fotogramas de Higgsfield en `frames/hero/`, los usa automáticamente
+  — ver `frames/hero/AGREGA-TUS-FRAMES.md`.
+- **Reproductores reales:** los botones de muestra SÍ suenan — sintetizan
+  guitarra (Karplus–Strong) en el navegador con visualizador en vivo.
+  Coloca tus MP3 reales en `audio/vals.mp3`, `audio/cumbia.mp3`,
+  `audio/balada.mp3` y el sitio los usa en lugar del demo.
+- **Español impecable:** todos los acentos y la ñ donde van.
+- **Cero dependencias de build:** HTML + CSS + JS planos + Lenis por CDN.
+  Se puede hospedar en cualquier hosting estático (Vercel, Netlify,
+  Cloudflare Pages, Replit static).
+
+## Novedades v2 (jul 2026)
+
+- **Corregido:** los MP3 reales en `audio/` ahora sí se reproducen (el
+  detector anterior con `canplaythrough` nunca disparaba porque el navegador
+  aborta la descarga del probe; ahora usa `loadedmetadata`). La nota de
+  "demos sintetizados" se oculta sola cuando hay archivos reales.
+- **Móvil estilo cash.app:** barra CTA fija inferior ("Crear mi canción →"
+  + WhatsApp) que se oculta durante la película del héroe y cuando el CTA
+  final ya está en pantalla; ocasiones en cuadrícula bento de 2 columnas;
+  el paquete Serenata aparece primero.
+- **Rendimiento:** los 179 fotogramas (~20 MB) ya no se descargan de golpe —
+  carga progresiva (dispersos primero, huecos después, 6 a la vez) con
+  fotograma más cercano como respaldo mientras llegan.
+- **Accesibilidad:** respeta `prefers-reduced-motion` (sin scroll suave,
+  película y grano estáticos).
+- **SEO:** favicon, `theme-color`, `og:locale` y datos estructurados
+  FAQPage (JSON-LD).
+- **Flujo guiado "Crear mi canción":** todos los botones `#crear` abren un
+  cuestionario de 4 pasos estilo cash.app (ocasión → persona → género →
+  paquete + historia) que termina en WhatsApp con el resumen ya escrito.
+  Las tarjetas de paquete preseleccionan su paquete. El número está en
+  `WA_NUMBER` dentro de `cinematic.js` (¡cambiarlo por el real!).
+
+## Novedades v3 (jul 2026)
+
+- **Fotos emotivas** en `img/` (generadas con Higgsfield, estética de velas
+  y vino/oro): tarjeta Quinceañera y Bodas con foto de fondo, y fotos sobre
+  los dos testimonios. Marcadas como ilustrativas — igual que los
+  testimonios, reemplazar con fotos de clientes reales al lanzar.
+- **Barra de progreso en los reproductores:** tiempo transcurrido/total y
+  clic para saltar a cualquier punto (solo con MP3 reales). Pausar y volver
+  a reproducir ahora reanuda donde quedó.
+
+## Pendientes antes de lanzar
+
+- [ ] Decidir el nombre final y comprar dominio (ver conversación de marcas)
+- [ ] Reemplazar testimonios ilustrativos por clientes reales
+- [ ] Subir muestras MP3 reales (vals / cumbia / balada)
+- [ ] Generar el clip Higgsfield para el héroe (`frames/hero/`)
+- [ ] Conectar el botón "Crear mi canción" al formulario/checkout existente
+- [ ] Poner el número real de WhatsApp en los enlaces `wa.me`
+- [ ] Versión en inglés en `/en/` con etiquetas hreflang

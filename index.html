@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Estudio Serenata — Tu historia, hecha canción</title>
+  <meta name="description" content="Canciones 100% originales escritas de tu historia — para quinceañeras, bodas, aniversarios y tributos. Compositores reales, entrega en días. Escucha ejemplos." />
+  <meta property="og:title" content="Estudio Serenata — Tu historia, hecha canción" />
+  <meta property="og:description" content="Regala una serenata moderna: una canción original escrita de tu historia, grabada con calidad de estudio." />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="es_MX" />
+  <meta name="theme-color" content="#120a14" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23120a14'/%3E%3Ctext x='50' y='74' font-size='64' text-anchor='middle' fill='%23d9a651'%3E%E2%99%AA%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&family=Great+Vibes&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ══════════ Navegación fija ══════════ -->
+  <nav class="nav" id="nav">
+    <a class="nav-brand" href="#top">
+      <span class="brand-casa">ESTUDIO</span><span class="brand-sere">Serenata</span>
+    </a>
+    <div class="nav-links">
+      <a href="#ocasiones">Ocasiones</a>
+      <a href="#muestras">Escuchar</a>
+      <a href="#paquetes">Paquetes</a>
+      <a href="#preguntas">Preguntas</a>
+    </div>
+    <a class="btn btn-gold nav-cta" href="#crear">Crear mi canción</a>
+  </nav>
+
+  <!-- ══════════ HÉROE CINEMÁTICO (scroll-scrub) ══════════ -->
+  <section class="cinematic" id="cinematic">
+    <div class="sticky">
+      <canvas id="frame-canvas"></canvas>
+      <div class="grain" id="grain"></div>
+      <div class="vignette"></div>
+
+      <div class="overlay">
+        <div class="line line-script" data-in="-0.22" data-out="0.24">
+          <span class="script">Cada amor</span>
+          <h1>tiene una historia.</h1>
+        </div>
+        <div class="line line-script" data-in="0.28" data-out="0.52">
+          <span class="script">Cada historia</span>
+          <h1>merece una canción.</h1>
+        </div>
+        <div class="line line-script" data-in="0.56" data-out="0.78">
+          <span class="script">Escrita para ti.</span>
+          <h1>Cantada para siempre.</h1>
+        </div>
+        <div class="line line-final" data-in="0.78" data-out="1.00">
+          <span class="script lg">Estudio Serenata</span>
+          <p class="final-sub">La serenata moderna: una canción original, escrita de tu historia.</p>
+          <a class="btn btn-gold btn-lg" href="#crear">Comenzar mi canción</a>
+        </div>
+      </div>
+
+      <a class="skip-film" id="skip-film" href="#ocasiones">Saltar intro <span>▸</span></a>
+      <div class="telemetry bl" id="frame-readout">ESCENA EN VIVO</div>
+      <div class="telemetry br">ESTUDIO SERENATA · MMXXVI</div>
+      <div class="progress"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="scroll-hint" id="scroll-hint">DESLIZA <span>▾</span></div>
+    </div>
+  </section>
+
+  <!-- ══════════ Cifras de confianza ══════════ -->
+  <section class="stats reveal">
+    <div class="stat"><span class="stat-num" data-count="20" data-suffix="+">0</span><span class="stat-label">géneros — del vals al corrido</span></div>
+    <div class="stat"><span class="stat-num" data-count="100" data-suffix="%">0</span><span class="stat-label">letra y melodía originales</span></div>
+    <div class="stat"><span class="stat-num" data-count="3" data-suffix=" días">0</span><span class="stat-label">entrega urgente disponible</span></div>
+    <div class="stat"><span class="stat-num" data-count="1" data-suffix="">0</span><span class="stat-label">canción que jamás olvidarán</span></div>
+  </section>
+
+  <!-- ══════════ Ocasiones ══════════ -->
+  <section class="section" id="ocasiones">
+    <p class="kicker reveal">PERFECTA PARA CADA MOMENTO</p>
+    <h2 class="reveal">La ocasión marca el compás</h2>
+    <div class="occasions">
+      <article class="occasion occasion-hero reveal" data-context="para el vals de tu quinceañera" tabindex="0" role="link" aria-label="Ver paquetes para quinceañera">
+        <div class="occ-glow"></div>
+        <h3><span class="script-sm">El vals de</span> Quinceañera</h3>
+        <p>El momento que toda la familia recordará: un vals único, con su nombre, su historia y las palabras de papá y mamá hechas música.</p>
+        <span class="occ-tag">La especialidad de la casa</span>
+        <span class="occ-cta">Ver paquetes →</span>
+      </article>
+      <article class="occasion occasion-boda reveal" data-context="para su boda" tabindex="0" role="link" aria-label="Ver paquetes para bodas">
+        <h3><span class="script-sm">El primer baile</span> Bodas</h3>
+        <p>Primer baile, votos y propuestas con su propia banda sonora.</p>
+        <span class="occ-meta">Balada · Bachata · Vals</span>
+        <span class="occ-cta">Ver paquetes →</span>
+      </article>
+      <article class="occasion occasion-aniv reveal" data-context="para su aniversario" tabindex="0" role="link" aria-label="Ver paquetes para aniversarios">
+        <h3><span class="script-sm">Los años juntos</span> Aniversarios</h3>
+        <p>Años de recuerdos, condensados en tres minutos inolvidables.</p>
+        <span class="occ-meta">Bolero · Balada</span>
+        <span class="occ-cta">Ver paquetes →</span>
+      </article>
+      <article class="occasion occasion-madres reveal" data-context="para mamá" tabindex="0" role="link" aria-label="Ver paquetes para el Día de las Madres">
+        <h3><span class="script-sm">Para mamá</span> Día de las Madres</h3>
+        <p>Las gracias que nunca se dicen, por fin cantadas.</p>
+        <span class="occ-meta">Ranchera · Balada</span>
+        <span class="occ-cta">Ver paquetes →</span>
+      </article>
+      <article class="occasion occasion-tributo reveal" data-context="para honrar su memoria" tabindex="0" role="link" aria-label="Ver paquetes para tributos">
+        <h3><span class="script-sm">Una canción eterna</span> Tributos</h3>
+        <p>Honra a quienes amamos con una canción que permanece.</p>
+        <span class="occ-meta">Mariachi · Acústico</span>
+        <span class="occ-cta">Ver paquetes →</span>
+      </article>
+      <article class="occasion occasion-negocio reveal" data-context="para tu negocio" tabindex="0" role="link" aria-label="Ver paquetes para negocios">
+        <h3><span class="script-sm">Tu marca suena</span> Negocios</h3>
+        <p>Jingles y música de marca con sabor auténtico.</p>
+        <span class="occ-meta">Jingle · Cumbia · Pop</span>
+        <span class="occ-cta">Ver paquetes →</span>
+      </article>
+    </div>
+  </section>
+
+  <!-- ══════════ Cómo funciona ══════════ -->
+  <section class="section section-alt" id="como">
+    <p class="kicker reveal">ASÍ DE SIMPLE</p>
+    <h2 class="reveal">Tu canción en tres pasos</h2>
+    <div class="steps">
+      <div class="step reveal"><span class="step-num">01</span><h3>Cuéntanos tu historia</h3><p>Llena nuestro formulario guiado: la persona, los recuerdos, el género que aman — vals, balada, cumbia, corrido, banda…</p></div>
+      <div class="step reveal"><span class="step-num">02</span><h3>La hacemos canción</h3><p>Nuestro equipo compone una pieza 100% original con letra personalizada y producción de calidad de estudio.</p></div>
+      <div class="step reveal"><span class="step-num">03</span><h3>Recibe y atesora</h3><p>Tu canción llega en audio de alta calidad, lista para regalar, bailar o compartir — con revisiones incluidas.</p></div>
+    </div>
+  </section>
+
+  <!-- ══════════ Muestras (reproductor real) ══════════ -->
+  <section class="section" id="muestras">
+    <p class="kicker reveal">ESCUCHA LA DIFERENCIA</p>
+    <h2 class="reveal">Muestras del estudio</h2>
+    <p class="section-sub reveal">Cada canción es única — esto es una probadita de lo que podemos crear para ti.</p>
+    <div class="samples">
+      <article class="sample reveal" data-demo="vals">
+        <button class="play" aria-label="Reproducir Vals de Quinceañera"><svg viewBox="0 0 24 24"><path class="ico-play" d="M8 5v14l11-7z"/><path class="ico-pause" d="M6 5h4v14H6zM14 5h4v14h-4z" style="display:none"/></svg></button>
+        <div class="sample-info">
+          <h3>Mi Niña, Mi Reina</h3>
+          <p class="sample-meta">Vals de Quinceañera · Orquestal</p>
+          <canvas class="viz" width="300" height="40"></canvas>
+        </div>
+      </article>
+      <article class="sample reveal" data-demo="cumbia">
+        <button class="play" aria-label="Reproducir Cumbia de Cumpleaños"><svg viewBox="0 0 24 24"><path class="ico-play" d="M8 5v14l11-7z"/><path class="ico-pause" d="M6 5h4v14H6zM14 5h4v14h-4z" style="display:none"/></svg></button>
+        <div class="sample-info">
+          <h3>Cincuenta Primaveras</h3>
+          <p class="sample-meta">Cumpleaños · Cumbia alegre</p>
+          <canvas class="viz" width="300" height="40"></canvas>
+        </div>
+      </article>
+      <article class="sample reveal" data-demo="balada">
+        <button class="play" aria-label="Reproducir Balada de Aniversario"><svg viewBox="0 0 24 24"><path class="ico-play" d="M8 5v14l11-7z"/><path class="ico-pause" d="M6 5h4v14H6zM14 5h4v14h-4z" style="display:none"/></svg></button>
+        <div class="sample-info">
+          <h3>Veinte Otoños Contigo</h3>
+          <p class="sample-meta">Aniversario · Balada acústica</p>
+          <canvas class="viz" width="300" height="40"></canvas>
+        </div>
+      </article>
+    </div>
+    <p class="demo-note reveal">▲ Demos instrumentales sintetizados en tu navegador — coloca tus canciones reales en <code>audio/vals.mp3</code>, <code>audio/cumbia.mp3</code> y <code>audio/balada.mp3</code> y el sitio las usará automáticamente.</p>
+  </section>
+
+  <!-- ══════════ Paquetes ══════════ -->
+  <section class="section section-alt" id="paquetes">
+    <p class="kicker reveal">PRECIOS CLAROS</p>
+    <h2 class="reveal">Elige tu paquete</h2>
+    <p class="paquetes-context" id="paquetes-context" aria-live="polite"></p>
+    <div class="tiers">
+      <article class="tier reveal">
+        <h3>Verso</h3><div class="price">$39<span> USD</span></div>
+        <ul><li>Canción personalizada corta</li><li>Letra hecha de tu historia</li><li>Descarga MP3</li><li>Entrega estándar</li></ul>
+        <a class="btn btn-line" href="#crear">Comenzar</a>
+      </article>
+      <article class="tier tier-featured reveal">
+        <span class="tier-badge">La más pedida</span>
+        <h3>Serenata</h3><div class="price">$89<span> USD</span></div>
+        <ul><li>Canción completa (2–3 min)</li><li>Producción de estudio</li><li>MP3 + WAV</li><li>1 revisión incluida</li><li>Entrega prioritaria disponible</li></ul>
+        <a class="btn btn-gold" href="#crear">Comenzar</a>
+      </article>
+      <article class="tier reveal">
+        <h3>Gran Gala</h3><div class="price">$199<span> USD</span></div>
+        <ul><li>Experiencia narrativa completa</li><li>Producción premium</li><li>MP3 + WAV + letra enmarcable</li><li>Revisiones múltiples</li><li>Entrega urgente 72h</li></ul>
+        <a class="btn btn-line" href="#crear">Comenzar</a>
+      </article>
+    </div>
+    <p class="tier-hint reveal">¿No sabes cuál elegir? La mayoría de las familias comienza con <strong>Serenata</strong>.</p>
+  </section>
+
+  <!-- ══════════ Testimonios ══════════ -->
+  <section class="section" id="testimonios">
+    <p class="kicker reveal">LO QUE DICEN LAS FAMILIAS</p>
+    <h2 class="reveal">Historias que ya son canción</h2>
+    <div class="quotes">
+      <blockquote class="reveal"><img class="quote-photo" src="img/quote-quince.jpg" alt="Imagen ilustrativa: madre abrazando a su hija quinceañera" loading="lazy" />«Cuando sonó el vals y escuchó su nombre, mi hija me abrazó llorando. Todo el salón se levantó a aplaudir.»<cite>— Mamá de quinceañera <span class="quote-note">(testimonio ilustrativo — reemplazar con clientes reales)</span></cite></blockquote>
+      <blockquote class="reveal"><img class="quote-photo" src="img/quote-aniversario.jpg" alt="Imagen ilustrativa: pareja bailando en su aniversario a la luz de las velas" loading="lazy" />«Le regalé la canción a mi esposa por nuestros 20 años. La escucha cada mañana camino al trabajo.»<cite>— Esposo orgulloso <span class="quote-note">(testimonio ilustrativo — reemplazar con clientes reales)</span></cite></blockquote>
+    </div>
+  </section>
+
+  <!-- ══════════ Preguntas frecuentes ══════════ -->
+  <section class="section section-alt" id="preguntas">
+    <p class="kicker reveal">¿DUDAS? AQUÍ LAS RESOLVEMOS</p>
+    <h2 class="reveal">Preguntas frecuentes</h2>
+    <div class="faq">
+      <details class="reveal"><summary>¿Cuánto tarda mi canción?</summary><p>La entrega estándar es de 7 a 10 días. ¿La fiesta es este fin de semana? Ofrecemos entrega urgente en 72 horas con el paquete Gran Gala.</p></details>
+      <details class="reveal"><summary>¿Puedo pedir un género específico?</summary><p>Claro que sí: vals, balada, cumbia, corrido, banda, bachata, mariachi, pop y más de veinte géneros. Tú eliges el sabor.</p></details>
+      <details class="reveal"><summary>¿Qué pasa si quiero cambios?</summary><p>Cada paquete incluye revisiones. Trabajamos contigo hasta que la canción se sienta exactamente como tu historia.</p></details>
+      <details class="reveal"><summary>¿En qué formato la recibo?</summary><p>MP3 de calidad de estudio; los paquetes Serenata y Gran Gala incluyen también WAV sin compresión, listo para el DJ del evento.</p></details>
+      <details class="reveal"><summary>¿Mi historia queda confidencial?</summary><p>Siempre. Tu historia es tuya — solo la convertimos en música.</p></details>
+    </div>
+  </section>
+
+  <!-- ══════════ CTA final ══════════ -->
+  <section class="cta-final" id="crear">
+    <canvas id="cta-canvas"></canvas>
+    <div class="cta-inner">
+      <span class="script lg reveal">¿Lista tu historia?</span>
+      <h2 class="reveal">Convirtámosla en canción.</h2>
+      <p class="reveal">Solo toma unos minutos comenzar. Sin conocimientos musicales, sin complicaciones.</p>
+      <div class="cta-buttons reveal">
+        <a class="btn btn-gold btn-lg" href="#crear" id="cta-final-crear">Crear mi canción</a>
+        <a class="btn btn-line btn-lg" href="https://wa.me/15555555555" rel="noopener">Escríbenos por WhatsApp</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ Pie ══════════ -->
+  <footer class="footer">
+    <div>
+      <span class="nav-brand"><span class="brand-casa">ESTUDIO</span><span class="brand-sere">Serenata</span></span>
+      <p>Tu historia, hecha canción.</p>
+    </div>
+    <div class="footer-links">
+      <a href="#ocasiones">Ocasiones</a><a href="#muestras">Muestras</a><a href="#paquetes">Paquetes</a><a href="#preguntas">Preguntas</a>
+    </div>
+    <p class="footer-fine">© 2026 Estudio Serenata. Todos los derechos reservados. · <a href="#">Privacidad</a> · <a href="#">Términos</a></p>
+  </footer>
+
+  <!-- Barra CTA fija (móvil) — estilo cash.app -->
+  <div class="cta-bar" id="cta-bar">
+    <a class="btn btn-gold cta-bar-btn" href="#crear">Crear mi canción <span class="cta-arrow">→</span></a>
+    <a class="cta-bar-wa" href="https://wa.me/15555555555" rel="noopener" aria-label="Escríbenos por WhatsApp">
+      <svg viewBox="0 0 32 32" width="22" height="22" fill="currentColor"><path d="M16 3C9.4 3 4 8.4 4 15c0 2.6.8 5 2.3 7L4 29l7.2-2.2c1.9 1 4 1.6 6.3 1.6 6.6 0 12-5.4 12-12S22.6 3 16 3zm0 21.8c-2 0-3.9-.6-5.5-1.5l-.4-.2-4.3 1.3 1.3-4.1-.3-.4C5.6 18.4 5 16.7 5 15 5 9 9.9 4 16 4s11 5 11 11-4.9 9.8-11 9.8zm6-7.3c-.3-.2-1.9-1-2.2-1.1-.3-.1-.5-.2-.7.2-.2.3-.8 1.1-1 1.3-.2.2-.4.2-.7.1-.3-.2-1.4-.5-2.6-1.6-1-.9-1.6-1.9-1.8-2.2-.2-.3 0-.5.1-.7l.5-.6c.2-.2.2-.4.3-.6.1-.2 0-.4 0-.6l-1-2.5c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4-.3.3-1.1 1.1-1.1 2.7s1.2 3.1 1.3 3.3c.2.2 2.3 3.6 5.6 5 .8.3 1.4.5 1.9.7.8.2 1.5.2 2.1.1.6-.1 1.9-.8 2.2-1.5.3-.8.3-1.4.2-1.5-.1-.2-.3-.2-.6-.4z"/></svg>
+    </a>
+  </div>
+
+  <!-- ══════════ Flujo guiado "Crear mi canción" (estilo cash.app) ══════════ -->
+  <div class="flow" id="flow" hidden role="dialog" aria-modal="true" aria-label="Crear mi canción">
+    <div class="flow-panel">
+      <div class="flow-top">
+        <div class="flow-progress"><div class="flow-progress-fill" id="flow-progress"></div></div>
+        <button class="flow-close" id="flow-close" aria-label="Cerrar">×</button>
+      </div>
+      <div class="flow-body" id="flow-body"></div>
+      <div class="flow-nav">
+        <button class="btn btn-line flow-back" id="flow-back" type="button">← Atrás</button>
+        <button class="btn btn-gold flow-next" id="flow-next" type="button">Siguiente →</button>
+      </div>
+    </div>
+  </div>
+
+  <a class="wa-float" href="https://wa.me/15555555555" rel="noopener" aria-label="WhatsApp">
+    <svg viewBox="0 0 32 32" width="26" height="26" fill="currentColor"><path d="M16 3C9.4 3 4 8.4 4 15c0 2.6.8 5 2.3 7L4 29l7.2-2.2c1.9 1 4 1.6 6.3 1.6 6.6 0 12-5.4 12-12S22.6 3 16 3zm0 21.8c-2 0-3.9-.6-5.5-1.5l-.4-.2-4.3 1.3 1.3-4.1-.3-.4C5.6 18.4 5 16.7 5 15 5 9 9.9 4 16 4s11 5 11 11-4.9 9.8-11 9.8zm6-7.3c-.3-.2-1.9-1-2.2-1.1-.3-.1-.5-.2-.7.2-.2.3-.8 1.1-1 1.3-.2.2-.4.2-.7.1-.3-.2-1.4-.5-2.6-1.6-1-.9-1.6-1.9-1.8-2.2-.2-.3 0-.5.1-.7l.5-.6c.2-.2.2-.4.3-.6.1-.2 0-.4 0-.6l-1-2.5c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4-.3.3-1.1 1.1-1.1 2.7s1.2 3.1 1.3 3.3c.2.2 2.3 3.6 5.6 5 .8.3 1.4.5 1.9.7.8.2 1.5.2 2.1.1.6-.1 1.9-.8 2.2-1.5.3-.8.3-1.4.2-1.5-.1-.2-.3-.2-.6-.4z"/></svg>
+  </a>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      { "@type": "Question", "name": "¿Cuánto tarda mi canción?",
+        "acceptedAnswer": { "@type": "Answer", "text": "La entrega estándar es de 7 a 10 días. También ofrecemos entrega urgente en 72 horas con el paquete Gran Gala." } },
+      { "@type": "Question", "name": "¿Puedo pedir un género específico?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Sí: vals, balada, cumbia, corrido, banda, bachata, mariachi, pop y más de veinte géneros." } },
+      { "@type": "Question", "name": "¿Qué pasa si quiero cambios?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Cada paquete incluye revisiones. Trabajamos contigo hasta que la canción se sienta exactamente como tu historia." } },
+      { "@type": "Question", "name": "¿En qué formato la recibo?",
+        "acceptedAnswer": { "@type": "Answer", "text": "MP3 de calidad de estudio; los paquetes Serenata y Gran Gala incluyen también WAV sin compresión." } },
+      { "@type": "Question", "name": "¿Mi historia queda confidencial?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Siempre. Tu historia es tuya — solo la convertimos en música." } }
+    ]
+  }
+  </script>
+  <script src="https://unpkg.com/lenis@1.3.21/dist/lenis.min.js"></script>
+  <script src="cinematic.js"></script>
+</body>
+</html>

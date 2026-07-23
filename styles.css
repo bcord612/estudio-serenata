@@ -497,10 +497,12 @@ h2 { font-size: clamp(2rem, 4.6vw, 3.4rem); text-align: center; margin-bottom: 1
 .flow-top { display: flex; align-items: center; gap: 14px; }
 .flow-progress { flex: 1; height: 2px; background: rgba(248,237,218,0.14); border-radius: 2px; }
 .flow-progress-fill {
-  height: 100%; width: 25%; border-radius: 2px;
+  height: 100%; width: 100%; border-radius: 2px;
   background: linear-gradient(90deg, var(--vino-2), var(--oro));
   box-shadow: 0 0 10px rgba(217,166,81,0.5);
-  transition: width 0.35s ease;
+  /* escala en lugar de width: anima en el compositor, sin relayout */
+  transform: scaleX(0.2); transform-origin: left;
+  transition: transform 0.35s ease;
 }
 .flow-close {
   background: none; border: none; cursor: pointer;

@@ -792,7 +792,7 @@ function renderFlowStep() {
     flowBody.append(lbl2, ta, note);
   }
 
-  flowProgress.style.width = `${((flowStep + 1) / FLOW_STEPS.length) * 100}%`;
+  flowProgress.style.transform = `scaleX(${(flowStep + 1) / FLOW_STEPS.length})`;
   flowBack.classList.toggle("hide", flowStep === 0);
   flowNext.textContent = flowStep === FLOW_STEPS.length - 1 ? "Continuar al pago" : "Siguiente →";
   refreshFlowNav();

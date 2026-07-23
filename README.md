@@ -71,6 +71,20 @@ powershell -ExecutionPolicy Bypass -File serve.ps1
       "Mi Niña, Mi Reina" 4:26 · "Cincuenta Primaveras" 3:10 ·
       "Veinte Otoños" 3:53 (convertidas de WAV a MP3 192 kbps)
 - [ ] Generar el clip Higgsfield para el héroe (`frames/hero/`)
-- [ ] Conectar el botón "Crear mi canción" al formulario/checkout existente
-- [ ] Poner el número real de WhatsApp en los enlaces `wa.me`
+- [x] Conectar el flujo "Crear mi canción" al checkout — jul 16 2026:
+      Stripe Payment Links en vivo (Verso/Serenata/Gran Gala) con códigos
+      ESTRENO15 (15%, expira 15 ago), HOYSI10 ($10) y AMIGA20 ($20).
+      El paso 4 redirige a Stripe con `client_reference_id` = Order ID,
+      `locale=es` y ESTRENO15 pre-aplicado; WhatsApp quedó como opción
+      secundaria "¿Prefieres hablar primero?".
+- [ ] Desplegar `orders-backend.gs` (Apps Script → Google Sheet) y pegar la
+      URL /exec en `ORDER_ENDPOINT` (cinematic.js) — mientras esté vacío,
+      el flujo exige enviar el resumen por WhatsApp antes del pago para
+      que el encargo nunca se pierda (jul 23 2026)
+- [ ] Cambiar el nombre público de la cuenta Stripe a "Estudio Serenata"
+      (hoy el checkout muestra "William Cordero"): Dashboard → Settings →
+      Business details → Public business name (y statement descriptor)
+- [x] Poner el número real de WhatsApp en los enlaces `wa.me` — jul 23 2026:
+      407.205.7707 (provisional, centralizado en `WA_NUMBER` de cinematic.js;
+      los tres enlaces estáticos de index.html también apuntan ahí)
 - [ ] Versión en inglés en `/en/` con etiquetas hreflang

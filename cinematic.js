@@ -36,6 +36,11 @@ let progress = 0;
 
 /* — detect Higgsfield frames — */
 (function detectFrames() {
+  /* conexiones lentas o con ahorro de datos: escena generativa, cero descargas */
+  const conn = navigator.connection;
+  if (conn && (conn.saveData || /(^|-)2g$/.test(conn.effectiveType || ""))) return;
+  /* móvil: ~60 fotogramas (1 de cada 3) — la mitad del peso, la misma película */
+  const FRAME_STEP = window.matchMedia("(max-width: 880px)").matches ? 3 : 1;
   const probe = new Image();
   probe.onload = () => {
     mode = "frames";
@@ -47,6 +52,7 @@ let progress = 0;
     const seen = new Set([0]);
     for (const stride of [8, 4, 2, 1]) {
       for (let i = 0; i < FRAME_COUNT; i += stride) {
+        if (i % FRAME_STEP !== 0) continue; // en móvil solo carga 1 de cada 3
         if (!seen.has(i)) { seen.add(i); order.push(i); }
       }
     }
@@ -595,9 +601,11 @@ function raf(time) {
   const inFilm = progress > 0.02 && progress < 0.97 && window.scrollY > 10;
   nav.classList.toggle("hidden", inFilm);
   if (ctaBar) {
-    /* oculta la barra durante la película y cuando el CTA final ya está en pantalla */
+    /* la barra aparece desde la mitad de la película (antes se escondía toda la intro)
+       y se oculta cuando el CTA final ya está en pantalla */
+    const inFirstHalfOfFilm = progress > 0.02 && progress < 0.5 && window.scrollY > 10;
     const finalVisible = ctaFinal && ctaFinal.getBoundingClientRect().top < window.innerHeight * 0.6;
-    ctaBar.classList.toggle("hidden", inFilm || finalVisible);
+    ctaBar.classList.toggle("hidden", inFirstHalfOfFilm || finalVisible);
   }
   if (skipFilm) skipFilm.classList.toggle("gone", progress > 0.9);
   requestAnimationFrame(raf);
@@ -609,7 +617,7 @@ requestAnimationFrame(raf);
 /* ═══════════ FLUJO GUIADO "Crear mi canción" ═══════════
    Un paso por pantalla (estilo cash.app); termina abriendo
    WhatsApp con el resumen listo para enviar. */
-const WA_NUMBER = "15555555555"; // ← reemplazar con el número real
+const WA_NUMBER = "14072057707"; // número de WhatsApp del negocio (wa.me, solo dígitos con código de país)
 
 const flowEl = document.getElementById("flow");
 const flowBody = document.getElementById("flow-body");
@@ -617,13 +625,24 @@ const flowProgress = document.getElementById("flow-progress");
 const flowBack = document.getElementById("flow-back");
 const flowNext = document.getElementById("flow-next");
 
-const flowState = { occasion: null, relation: null, name: "", genre: null, pkg: "Serenata · $89 USD", story: "" };
+const flowState = { occasion: null, relation: null, name: "", genre: null, date: null, pkg: "Serenata · $89 USD", story: "" };
 let flowStep = 0;
+let urgentConfirmArmed = false; // doble confirmación cuando la fiesta es esta semana con entrega estándar
+
+/* ── Pago: enlaces de Stripe + captura del pedido ──
+   ORDER_ENDPOINT: URL /exec del Web App de Google Apps Script (ver orders-backend.gs).
+   ⚠ PENDIENTE DE DESPLEGAR: mientras esté vacío, el flujo exige enviar el resumen
+   por WhatsApp antes del pago, para que el encargo nunca se pierda. */
+const ORDER_ENDPOINT = ""; // ← pegar la URL /exec del Web App al desplegarlo
+const PREFILL_PROMO = "ESTRENO15"; // se autocompleta en el checkout; "" para desactivar
 
 const PKGS = [
-  { name: "Verso", price: "$39 USD", tag: "" },
-  { name: "Serenata", price: "$89 USD", tag: "La más pedida" },
-  { name: "Gran Gala", price: "$199 USD", tag: "Urgente 72h" }
+  { name: "Verso", price: "$39 USD", tag: "", urgente: false, pay: "https://buy.stripe.com/00wfZhfSwcktaR2730grS00",
+    includes: "Canción corta · Letra de su historia · MP3 · Entrega estándar (7–10 días)" },
+  { name: "Serenata", price: "$89 USD", tag: "La más pedida", urgente: false, pay: "https://buy.stripe.com/5kQ14n5dS98h1gsbjggrS01",
+    includes: "Canción completa (2–3 min) · Producción de estudio · MP3 + WAV · 1 revisión · Entrega 7–10 días" },
+  { name: "Gran Gala", price: "$199 USD", tag: "Urgente 72h", urgente: true, pay: "https://buy.stripe.com/aFafZh0XCfwFf7i0ECgrS02",
+    includes: "Experiencia narrativa completa · Producción premium · MP3 + WAV + letra enmarcable · Revisiones múltiples · Entrega urgente 72h" }
 ];
 
 const FLOW_STEPS = [
@@ -633,8 +652,13 @@ const FLOW_STEPS = [
     options: ["Mi hija", "Mi hijo", "Mi pareja", "Mi mamá", "Mi papá", "Otro ser querido"] },
   { key: "genre", kicker: "Paso 3 · El sabor", title: "¿Qué género le encanta?", auto: true,
     options: ["Vals", "Balada", "Cumbia", "Bachata", "Corrido", "Banda", "Mariachi", "Bolero", "Pop", "Ustedes elijan"] },
-  { key: "final", kicker: "Paso 4 · Tu historia", title: "Cuéntanos lo esencial" }
+  { key: "date", kicker: "Paso 4 · La fecha", title: "¿Cuándo es la fiesta?", auto: true,
+    options: ["Esta semana", "Este mes", "Tengo más tiempo"] },
+  { key: "final", kicker: "Paso 5 · Su historia", title: "Revise y cuéntenos lo esencial" }
 ];
+
+const isUrgentDate = () => flowState.date === "Esta semana";
+const selectedPkg = () => PKGS.find(p => flowState.pkg.startsWith(p.name));
 
 function chipGrid(options, selected, onPick) {
   const grid = document.createElement("div");
@@ -654,9 +678,49 @@ function chipGrid(options, selected, onPick) {
   return grid;
 }
 
+function renderRecap() {
+  /* recapitulación de todas las respuestas al abrir el paso de pago (nunca se paga a ciegas) */
+  const recap = document.createElement("div");
+  recap.className = "flow-recap";
+  const who = `${flowState.relation || "—"}${flowState.name.trim() ? " — " + flowState.name.trim() : ""}`;
+  recap.innerHTML =
+    `<strong>${flowState.occasion || "—"}</strong> · para <strong>${who}</strong> · ` +
+    `<strong>${flowState.genre || "—"}</strong> · fiesta: <strong>${flowState.date || "—"}</strong><br>`;
+  const edit = document.createElement("button");
+  edit.type = "button";
+  edit.className = "recap-edit";
+  edit.textContent = "Editar mis respuestas";
+  edit.addEventListener("click", () => { flowStep = 0; renderFlowStep(); });
+  recap.appendChild(edit);
+  return recap;
+}
+
+function renderUrgentWarning() {
+  const warn = document.createElement("div");
+  warn.className = "flow-urgent";
+  warn.innerHTML =
+    `<strong>Su fiesta es esta semana.</strong> La entrega estándar tarda 7–10 días y no llegaría a tiempo. ` +
+    `Le recomendamos <strong>Gran Gala (entrega 72h)</strong> o escribirnos por WhatsApp para confirmar fechas.`;
+  const swap = document.createElement("button");
+  swap.type = "button";
+  swap.className = "btn btn-gold";
+  swap.style.cssText = "margin-top:12px;width:100%;text-align:center;";
+  swap.textContent = "Cambiar a Gran Gala (72h)";
+  swap.addEventListener("click", () => {
+    const gg = PKGS.find(p => p.urgente);
+    flowState.pkg = `${gg.name} · ${gg.price}`;
+    urgentConfirmArmed = false;
+    renderFlowStep();
+  });
+  warn.appendChild(swap);
+  return warn;
+}
+
 function renderFlowStep() {
   const step = FLOW_STEPS[flowStep];
   flowBody.innerHTML = "";
+  flowBody.scrollTop = 0;
+  urgentConfirmArmed = false;
 
   const kicker = document.createElement("p");
   kicker.className = "flow-kicker";
@@ -666,7 +730,7 @@ function renderFlowStep() {
   title.textContent = step.title;
   flowBody.append(kicker, title);
 
-  if (step.key === "occasion" || step.key === "genre") {
+  if (step.key === "occasion" || step.key === "genre" || step.key === "date") {
     flowBody.appendChild(chipGrid(step.options, flowState[step.key], (opt) => {
       flowState[step.key] = opt;
       refreshFlowNav();
@@ -677,7 +741,7 @@ function renderFlowStep() {
     input.className = "flow-input";
     input.type = "text";
     input.maxLength = 60;
-    input.placeholder = "Su nombre (opcional)";
+    input.placeholder = "El nombre de esa persona (opcional)";
     input.value = flowState.name;
     input.addEventListener("input", () => { flowState.name = input.value; });
     flowBody.appendChild(input);
@@ -686,10 +750,13 @@ function renderFlowStep() {
       refreshFlowNav();
     }));
   } else {
-    /* paso final: paquete + historia */
+    /* paso final: recap + aviso de urgencia + paquete (con contenido) + historia */
+    flowBody.appendChild(renderRecap());
+    if (isUrgentDate() && !selectedPkg()?.urgente) flowBody.appendChild(renderUrgentWarning());
+
     const lbl1 = document.createElement("p");
     lbl1.className = "flow-label";
-    lbl1.textContent = "Elige tu paquete";
+    lbl1.textContent = "Elija su paquete";
     flowBody.appendChild(lbl1);
     for (const p of PKGS) {
       const val = `${p.name} · ${p.price}`;
@@ -699,29 +766,35 @@ function renderFlowStep() {
       b.innerHTML = `<span><span class="pkg-name">${p.name}</span>${p.tag ? ` <span class="pkg-tag">${p.tag}</span>` : ""}</span><span class="pkg-price">${p.price}</span>`;
       b.addEventListener("click", () => {
         flowState.pkg = val;
-        flowBody.querySelectorAll(".pkg-row").forEach(c => c.classList.remove("sel"));
-        b.classList.add("sel");
+        renderFlowStep(); // re-dibuja: contenido bajo el paquete elegido + aviso de urgencia
       });
       flowBody.appendChild(b);
+      if (flowState.pkg === val) {
+        /* el contenido del paquete, visible en el momento de decidir */
+        const inc = document.createElement("p");
+        inc.className = "pkg-includes";
+        inc.textContent = p.includes;
+        flowBody.appendChild(inc);
+      }
     }
     const lbl2 = document.createElement("p");
     lbl2.className = "flow-label";
-    lbl2.textContent = "Tu historia";
+    lbl2.textContent = "Su historia";
     const ta = document.createElement("textarea");
     ta.className = "flow-textarea";
     ta.maxLength = 600;
-    ta.placeholder = "Un recuerdo, una anécdota, lo que quieres que diga la canción… (opcional)";
+    ta.placeholder = "Un recuerdo, una anécdota, lo que quiere que diga la canción… (opcional)";
     ta.value = flowState.story;
     ta.addEventListener("input", () => { flowState.story = ta.value; });
     const note = document.createElement("p");
     note.className = "flow-note";
-    note.textContent = "Al continuar se abre WhatsApp con tu resumen ya escrito — tú lo revisas y lo envías.";
+    note.textContent = "Pago seguro con Stripe — tarjeta, Apple Pay o Google Pay. Su historia se guarda con su pedido.";
     flowBody.append(lbl2, ta, note);
   }
 
   flowProgress.style.width = `${((flowStep + 1) / FLOW_STEPS.length) * 100}%`;
   flowBack.classList.toggle("hide", flowStep === 0);
-  flowNext.textContent = flowStep === FLOW_STEPS.length - 1 ? "Enviar por WhatsApp" : "Siguiente →";
+  flowNext.textContent = flowStep === FLOW_STEPS.length - 1 ? "Continuar al pago" : "Siguiente →";
   refreshFlowNav();
 }
 
@@ -731,21 +804,125 @@ function refreshFlowNav() {
   flowNext.classList.toggle("off", !ready);
 }
 
-function buildWaUrl() {
-  const lines = [
-    "¡Hola! Quiero crear una canción personalizada 🎶",
-    `• Ocasión: ${flowState.occasion}`,
-    `• Para: ${flowState.relation}${flowState.name.trim() ? " — " + flowState.name.trim() : ""}`,
-    `• Género: ${flowState.genre}`,
-    `• Paquete: ${flowState.pkg}`
-  ];
+function buildWaUrl(orderId) {
+  const lines = ["¡Hola! Quiero crear una canción personalizada 🎶"];
+  if (flowState.occasion) lines.push(`• Ocasión: ${flowState.occasion}`);
+  if (flowState.relation) lines.push(`• Para: ${flowState.relation}${flowState.name.trim() ? " — " + flowState.name.trim() : ""}`);
+  if (flowState.genre) lines.push(`• Género: ${flowState.genre}`);
+  if (flowState.date) lines.push(`• La fiesta es: ${flowState.date}`);
+  lines.push(`• Paquete: ${flowState.pkg}`);
   if (flowState.story.trim()) lines.push(`• Nuestra historia: ${flowState.story.trim()}`);
+  if (orderId) lines.push(`• Pedido: ${orderId}`);
   return `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(lines.join("\n"))}`;
+}
+
+function newOrderId() {
+  return "ES-" + Date.now().toString(36).toUpperCase() + "-" + Math.random().toString(36).slice(2, 6).toUpperCase();
+}
+
+function goToStripe(pkg, orderId) {
+  const url = new URL(pkg.pay);
+  url.searchParams.set("client_reference_id", orderId);
+  url.searchParams.set("locale", "es");
+  if (PREFILL_PROMO) url.searchParams.set("prefilled_promo_code", PREFILL_PROMO);
+  window.location.href = url.toString();
+}
+
+/* Registro del encargo. Devuelve true solo si el POST salió sin error de red.
+   (Apps Script + no-cors: la respuesta es opaca; un rechazo o timeout = fallo.) */
+async function registerOrder(payload) {
+  if (!ORDER_ENDPOINT) return false;
+  try {
+    const result = await Promise.race([
+      /* text/plain evita el preflight CORS que Apps Script no responde */
+      fetch(ORDER_ENDPOINT, {
+        method: "POST", mode: "no-cors", keepalive: true,
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload)
+      }).then(() => "ok"),
+      new Promise(res => setTimeout(() => res("timeout"), 6000))
+    ]);
+    return result === "ok";
+  } catch (_) { return false; }
+}
+
+/* Fallo (o ausencia) del registro remoto: NO se sigue en silencio al pago.
+   WhatsApp se vuelve el camino obligatorio para que el encargo llegue al estudio. */
+function showOrderFallback(pkg, orderId) {
+  flowBody.querySelector(".flow-order-fallback")?.remove();
+  const box = document.createElement("div");
+  box.className = "flow-order-fallback";
+  box.innerHTML =
+    `<strong>Un paso importante:</strong> para que su canción quede encargada, ` +
+    `envíenos primero su resumen por WhatsApp — un toque y el mensaje ya va escrito. Después le llevamos al pago.`;
+  const waBtn = document.createElement("a");
+  waBtn.className = "btn btn-gold";
+  waBtn.href = buildWaUrl(orderId);
+  waBtn.target = "_blank";
+  waBtn.rel = "noopener";
+  waBtn.textContent = "Enviar mi resumen por WhatsApp";
+  const payBtn = document.createElement("button");
+  payBtn.type = "button";
+  payBtn.className = "btn btn-line";
+  payBtn.style.cssText = "margin-top:10px;width:100%;text-align:center;opacity:0.45;pointer-events:none;";
+  payBtn.textContent = "Ya lo envié — continuar al pago";
+  waBtn.addEventListener("click", () => {
+    /* al abrir WhatsApp se desbloquea el pago */
+    payBtn.style.opacity = "1";
+    payBtn.style.pointerEvents = "auto";
+  });
+  payBtn.addEventListener("click", () => goToStripe(pkg, orderId));
+  box.append(waBtn, payBtn);
+  flowBody.appendChild(box);
+  box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  flowNext.textContent = "Continuar al pago";
+  refreshFlowNav();
+}
+
+async function submitOrderAndPay() {
+  const pkg = selectedPkg();
+  if (!pkg) return;
+
+  /* fiesta esta semana + entrega estándar: aviso claro y doble confirmación */
+  if (isUrgentDate() && !pkg.urgente && !urgentConfirmArmed) {
+    urgentConfirmArmed = true;
+    if (!flowBody.querySelector(".flow-urgent")) flowBody.prepend(renderUrgentWarning());
+    flowBody.querySelector(".flow-urgent")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    flowNext.textContent = "Entiendo, pagar entrega 7–10 días";
+    return;
+  }
+
+  const orderId = newOrderId();
+  const payload = {
+    orderId,
+    ocasion: flowState.occasion,
+    para: flowState.relation,
+    nombre: flowState.name.trim(),
+    genero: flowState.genre,
+    fechaEvento: flowState.date,
+    paquete: flowState.pkg,
+    historia: flowState.story.trim(),
+    pagina: location.href,
+    fecha: new Date().toISOString()
+  };
+  /* respaldo local por si el registro remoto falla */
+  try { localStorage.setItem("es-ultimo-pedido", JSON.stringify(payload)); } catch (_) {}
+
+  flowNext.classList.add("off");
+  flowNext.textContent = "Un momento…";
+
+  const registered = await registerOrder(payload);
+  if (!registered) {
+    flowNext.classList.remove("off");
+    showOrderFallback(pkg, orderId);
+    return;
+  }
+  goToStripe(pkg, orderId);
 }
 
 function nextFlowStep() {
   if (flowStep === FLOW_STEPS.length - 1) {
-    window.open(buildWaUrl(), "_blank", "noopener");
+    submitOrderAndPay();
     return;
   }
   flowStep++;
@@ -762,6 +939,9 @@ function openFlow(tierEl) {
   flowEl.hidden = false;
   document.body.style.overflow = "hidden";
   if (lenis) lenis.stop();
+  /* al reabrir siempre se aterriza en el recap (paso final = recap arriba),
+     nunca a un toque ciego del pago: renderFlowStep resetea la confirmación
+     de urgencia y limpia cualquier estado de envío anterior */
   renderFlowStep();
   document.getElementById("flow-close").focus();
 }
@@ -774,5 +954,10 @@ function closeFlow() {
 
 flowNext.addEventListener("click", nextFlowStep);
 flowBack.addEventListener("click", () => { if (flowStep > 0) { flowStep--; renderFlowStep(); } });
+/* escape fijo a WhatsApp: siempre visible junto a la navegación del flujo */
+document.getElementById("flow-wa-link")?.addEventListener("click", (e) => {
+  e.preventDefault();
+  window.open(buildWaUrl(), "_blank", "noopener");
+});
 document.getElementById("flow-close").addEventListener("click", closeFlow);
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !flowEl.hidden) closeFlow(); });

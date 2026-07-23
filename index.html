@@ -13,7 +13,9 @@
   <link rel="icon" href="favicon.ico" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&family=Great+Vibes&display=swap" rel="stylesheet" />
+  <!-- Fuentes no bloqueantes: carga como "print" y se activa al terminar; noscript de respaldo -->
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&family=Great+Vibes&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&family=Great+Vibes&display=swap" rel="stylesheet" /></noscript>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -71,7 +73,7 @@
   <section class="stats reveal">
     <div class="stat"><span class="stat-num" data-count="20" data-suffix="+">0</span><span class="stat-label">géneros — del vals al corrido</span></div>
     <div class="stat"><span class="stat-num" data-count="100" data-suffix="%">0</span><span class="stat-label">letra y melodía originales</span></div>
-    <div class="stat"><span class="stat-num" data-count="3" data-suffix=" días">0</span><span class="stat-label">entrega urgente disponible</span></div>
+    <div class="stat"><span class="stat-num" data-count="72" data-suffix="h">0</span><span class="stat-label">entrega urgente disponible</span></div>
     <div class="stat"><span class="stat-num" data-count="1" data-suffix="">0</span><span class="stat-label">canción que jamás olvidarán</span></div>
   </section>
 
@@ -119,7 +121,7 @@
       </article>
       <article class="occasion occasion-fiesta reveal" data-context="para tu ocasión especial" tabindex="0" role="link" aria-label="Ver paquetes para cualquier ocasión">
         <h3><span class="script-sm">¿Otra ocasión?</span> Todo lo demás</h3>
-        <p>Cumpleaños, eventos — cualquier momento que merezca una canción hecha a la medida para usted y sus seres queridos.</p>
+        <p>Cumpleaños, eventos — cualquier momento que merezca una canción hecha a la medida para ti y para quienes amas.</p>
         <span class="occ-meta">Cumpleaños · Eventos · También en inglés</span>
         <span class="occ-cta">Ver paquetes →</span>
       </article>
@@ -174,8 +176,9 @@
   <!-- ══════════ Paquetes ══════════ -->
   <section class="section section-alt" id="paquetes">
     <p class="kicker reveal">PRECIOS CLAROS</p>
-    <h2 class="reveal">Elige tu paquete</h2>
+    <h2 class="reveal">Elija su paquete</h2>
     <p class="paquetes-context" id="paquetes-context" aria-live="polite"></p>
+    <p class="promo-banner reveal"><span class="promo-code">ESTRENO15</span> · Descuento de estreno en tu primera canción — se aplica solo al pagar.</p>
     <div class="tiers">
       <article class="tier reveal">
         <h3>Verso</h3><div class="price">$39<span> USD</span></div>
@@ -194,7 +197,7 @@
         <a class="btn btn-line" href="#crear">Comenzar</a>
       </article>
     </div>
-    <p class="tier-hint reveal">¿No sabes cuál elegir? La mayoría de las familias comienza con <strong>Serenata</strong>.</p>
+    <p class="tier-hint reveal">¿No sabe cuál elegir? La mayoría de las familias comienza con <strong>Serenata</strong>.</p>
   </section>
 
   <!-- ══════════ Testimonios ══════════ -->
@@ -213,11 +216,11 @@
     <h2 class="reveal">Preguntas frecuentes</h2>
     <div class="faq">
       <details class="reveal"><summary>¿Cuánto tarda mi canción?</summary><p>La entrega estándar es de 7 a 10 días. ¿La fiesta es este fin de semana? Ofrecemos entrega urgente en 72 horas con el paquete Gran Gala.</p></details>
-      <details class="reveal"><summary>¿Puedo pedir un género específico?</summary><p>Claro que sí: vals, balada, cumbia, corrido, banda, bachata, mariachi, pop y más de veinte géneros. Tú eliges el sabor.</p></details>
+      <details class="reveal"><summary>¿Puedo pedir un género específico?</summary><p>Claro que sí: vals, balada, cumbia, corrido, banda, bachata, mariachi, pop y más de veinte géneros. Usted elige el sabor.</p></details>
       <details class="reveal"><summary>¿La canción puede ser en inglés?</summary><p>¡Claro! Componemos en español, en inglés o bilingüe — perfecta para familias que celebran en los dos idiomas. We write in English too, just ask.</p></details>
-      <details class="reveal"><summary>¿Qué pasa si quiero cambios?</summary><p>Cada paquete incluye revisiones. Trabajamos contigo hasta que la canción se sienta exactamente como tu historia.</p></details>
+      <details class="reveal"><summary>¿Qué pasa si quiero cambios?</summary><p>Cada paquete incluye revisiones. Trabajamos con usted hasta que la canción se sienta exactamente como su historia.</p></details>
       <details class="reveal"><summary>¿En qué formato la recibo?</summary><p>MP3 de calidad de estudio; los paquetes Serenata y Gran Gala incluyen también WAV sin compresión, listo para el DJ del evento.</p></details>
-      <details class="reveal"><summary>¿Mi historia queda confidencial?</summary><p>Siempre. Tu historia es tuya — solo la convertimos en música.</p></details>
+      <details class="reveal"><summary>¿Mi historia queda confidencial?</summary><p>Siempre. Su historia es suya — solo la convertimos en música.</p></details>
     </div>
   </section>
 
@@ -230,7 +233,7 @@
       <p class="reveal">Solo toma unos minutos comenzar. Sin conocimientos musicales, sin complicaciones.</p>
       <div class="cta-buttons reveal">
         <a class="btn btn-gold btn-lg" href="#crear" id="cta-final-crear">Crear mi canción</a>
-        <a class="btn btn-line btn-lg" href="https://wa.me/15555555555" rel="noopener">Escríbenos por WhatsApp</a>
+        <a class="btn btn-line btn-lg" href="https://wa.me/14072057707" rel="noopener">Escríbenos por WhatsApp</a>
       </div>
     </div>
   </section>
@@ -250,7 +253,7 @@
   <!-- Barra CTA fija (móvil) — estilo cash.app -->
   <div class="cta-bar" id="cta-bar">
     <a class="btn btn-gold cta-bar-btn" href="#crear">Crear mi canción <span class="cta-arrow">→</span></a>
-    <a class="cta-bar-wa" href="https://wa.me/15555555555" rel="noopener" aria-label="Escríbenos por WhatsApp">
+    <a class="cta-bar-wa" href="https://wa.me/14072057707" rel="noopener" aria-label="Escríbenos por WhatsApp">
       <svg viewBox="0 0 32 32" width="22" height="22" fill="currentColor"><path d="M16 3C9.4 3 4 8.4 4 15c0 2.6.8 5 2.3 7L4 29l7.2-2.2c1.9 1 4 1.6 6.3 1.6 6.6 0 12-5.4 12-12S22.6 3 16 3zm0 21.8c-2 0-3.9-.6-5.5-1.5l-.4-.2-4.3 1.3 1.3-4.1-.3-.4C5.6 18.4 5 16.7 5 15 5 9 9.9 4 16 4s11 5 11 11-4.9 9.8-11 9.8zm6-7.3c-.3-.2-1.9-1-2.2-1.1-.3-.1-.5-.2-.7.2-.2.3-.8 1.1-1 1.3-.2.2-.4.2-.7.1-.3-.2-1.4-.5-2.6-1.6-1-.9-1.6-1.9-1.8-2.2-.2-.3 0-.5.1-.7l.5-.6c.2-.2.2-.4.3-.6.1-.2 0-.4 0-.6l-1-2.5c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4-.3.3-1.1 1.1-1.1 2.7s1.2 3.1 1.3 3.3c.2.2 2.3 3.6 5.6 5 .8.3 1.4.5 1.9.7.8.2 1.5.2 2.1.1.6-.1 1.9-.8 2.2-1.5.3-.8.3-1.4.2-1.5-.1-.2-.3-.2-.6-.4z"/></svg>
     </a>
   </div>
@@ -263,6 +266,8 @@
         <button class="flow-close" id="flow-close" aria-label="Cerrar">×</button>
       </div>
       <div class="flow-body" id="flow-body"></div>
+      <!-- escape a WhatsApp fijo junto a la navegación: visible sin scroll en cualquier pantalla -->
+      <div class="flow-wa-row"><a href="#" id="flow-wa-link">¿Prefiere hablar primero? Envíenos su resumen por WhatsApp →</a></div>
       <div class="flow-nav">
         <button class="btn btn-line flow-back" id="flow-back" type="button">← Atrás</button>
         <button class="btn btn-gold flow-next" id="flow-next" type="button">Siguiente →</button>
@@ -270,7 +275,7 @@
     </div>
   </div>
 
-  <a class="wa-float" href="https://wa.me/15555555555" rel="noopener" aria-label="WhatsApp">
+  <a class="wa-float" href="https://wa.me/14072057707" rel="noopener" aria-label="WhatsApp">
     <svg viewBox="0 0 32 32" width="26" height="26" fill="currentColor"><path d="M16 3C9.4 3 4 8.4 4 15c0 2.6.8 5 2.3 7L4 29l7.2-2.2c1.9 1 4 1.6 6.3 1.6 6.6 0 12-5.4 12-12S22.6 3 16 3zm0 21.8c-2 0-3.9-.6-5.5-1.5l-.4-.2-4.3 1.3 1.3-4.1-.3-.4C5.6 18.4 5 16.7 5 15 5 9 9.9 4 16 4s11 5 11 11-4.9 9.8-11 9.8zm6-7.3c-.3-.2-1.9-1-2.2-1.1-.3-.1-.5-.2-.7.2-.2.3-.8 1.1-1 1.3-.2.2-.4.2-.7.1-.3-.2-1.4-.5-2.6-1.6-1-.9-1.6-1.9-1.8-2.2-.2-.3 0-.5.1-.7l.5-.6c.2-.2.2-.4.3-.6.1-.2 0-.4 0-.6l-1-2.5c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4-.3.3-1.1 1.1-1.1 2.7s1.2 3.1 1.3 3.3c.2.2 2.3 3.6 5.6 5 .8.3 1.4.5 1.9.7.8.2 1.5.2 2.1.1.6-.1 1.9-.8 2.2-1.5.3-.8.3-1.4.2-1.5-.1-.2-.3-.2-.6-.4z"/></svg>
   </a>
 
@@ -286,11 +291,11 @@
       { "@type": "Question", "name": "¿La canción puede ser en inglés?",
         "acceptedAnswer": { "@type": "Answer", "text": "Sí. Componemos en español, en inglés o bilingüe — perfecta para familias que celebran en los dos idiomas." } },
       { "@type": "Question", "name": "¿Qué pasa si quiero cambios?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Cada paquete incluye revisiones. Trabajamos contigo hasta que la canción se sienta exactamente como tu historia." } },
+        "acceptedAnswer": { "@type": "Answer", "text": "Cada paquete incluye revisiones. Trabajamos con usted hasta que la canción se sienta exactamente como su historia." } },
       { "@type": "Question", "name": "¿En qué formato la recibo?",
         "acceptedAnswer": { "@type": "Answer", "text": "MP3 de calidad de estudio; los paquetes Serenata y Gran Gala incluyen también WAV sin compresión." } },
       { "@type": "Question", "name": "¿Mi historia queda confidencial?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Siempre. Tu historia es tuya — solo la convertimos en música." } }
+        "acceptedAnswer": { "@type": "Answer", "text": "Siempre. Su historia es suya — solo la convertimos en música." } }
     ]
   }
   </script>

@@ -35,7 +35,12 @@ let currentFrame = -1;
 let progress = 0;
 
 /* — detect Higgsfield frames — */
+/* Héroe generativo por decisión de diseño (jul 23 2026): el clip de guitarra
+   se veía desenfocado y barato frente al resto del sitio. Los fotogramas
+   siguen en frames/hero/ y en git; cambia a true para recuperar la película. */
+const USE_HERO_FRAMES = false;
 (function detectFrames() {
+  if (!USE_HERO_FRAMES) return;
   /* conexiones lentas o con ahorro de datos: escena generativa, cero descargas */
   const conn = navigator.connection;
   if (conn && (conn.saveData || /(^|-)2g$/.test(conn.effectiveType || ""))) return;
@@ -172,19 +177,46 @@ function drawGenerative(p, time) {
 
   const cx = W / 2, cy = H / 2;
 
-  /* waveform glow line */
-  if (wWave > 0.03) {
+  /* corazón trazado en luz: se dibuja bajo las partículas para que
+     el contorno se lea nítido mientras ellas se acomodan */
+  if (wHeart > 0.05) {
+    const scale = Math.min(W, H) * 0.022;
     ctx.beginPath();
-    for (let i = 0; i <= 120; i++) {
-      const t = i / 120;
-      const env = ENV[Math.floor(t * (ENV.length - 1))];
-      const x = W * 0.08 + t * W * 0.84;
-      const y = cy + Math.sin(t * 90) * H * 0.18 * env * (0.85 + 0.15 * Math.sin(time * 0.003 + t * 12));
+    for (let i = 0; i <= 72; i++) {
+      const t = (i / 72) * Math.PI * 2;
+      const hx = 16 * Math.pow(Math.sin(t), 3);
+      const hy = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+      const x = cx + hx * scale, y = cy - hy * scale;
       i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
     }
-    ctx.strokeStyle = `rgba(240,205,138,${0.22 * wWave})`;
-    ctx.lineWidth = 1.2;
+    ctx.closePath();
+    const pulse = 0.75 + 0.25 * Math.sin(time * 0.0016); // latido lento
+    ctx.strokeStyle = `rgba(240,205,138,${0.10 * wHeart * pulse})`;
+    ctx.lineWidth = 7;
     ctx.stroke();
+    ctx.strokeStyle = `rgba(248,237,218,${0.30 * wHeart * pulse})`;
+    ctx.lineWidth = 1.4;
+    ctx.stroke();
+  }
+
+  /* waveform: halo suave + trazo dorado + armónico rosa (tres pasadas) */
+  if (wWave > 0.03) {
+    const trace = (ampMul, color, alpha, lw, phase) => {
+      ctx.beginPath();
+      for (let i = 0; i <= 120; i++) {
+        const t = i / 120;
+        const env = ENV[Math.floor(t * (ENV.length - 1))];
+        const x = W * 0.08 + t * W * 0.84;
+        const y = cy + Math.sin(t * 90 + phase) * H * 0.18 * env * ampMul * (0.85 + 0.15 * Math.sin(time * 0.003 + t * 12));
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = `rgba(${color},${alpha * wWave})`;
+      ctx.lineWidth = lw;
+      ctx.stroke();
+    };
+    trace(1, "240,205,138", 0.10, 5, 0);      // halo cálido
+    trace(1, "240,205,138", 0.40, 1.4, 0);    // melodía principal
+    trace(0.55, "232,93,138", 0.18, 1, 2.1);  // armónico rosa
   }
 
   /* particles */
@@ -217,7 +249,13 @@ function drawGenerative(p, time) {
     else ctx.fillStyle = `rgba(248,237,218,${alpha})`;
 
     ctx.beginPath();
-    ctx.arc(pt.x, pt.y, r, 0, 6.2832);
+    if (wBurst > 0.15) {
+      /* en el estallido final los puntos se vuelven pétalos que caen girando */
+      const rot = pt.burstA + Math.sin(time * 0.001 + pt.sway) * 0.7;
+      ctx.ellipse(pt.x, pt.y, r * (1 + 1.3 * wBurst), r * 0.85, rot, 0, 6.2832);
+    } else {
+      ctx.arc(pt.x, pt.y, r, 0, 6.2832);
+    }
     ctx.fill();
   }
 

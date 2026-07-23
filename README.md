@@ -70,7 +70,11 @@ powershell -ExecutionPolicy Bypass -File serve.ps1
 - [x] Subir muestras MP3 reales (vals / cumbia / balada) — jul 2026:
       "Mi Niña, Mi Reina" 4:26 · "Cincuenta Primaveras" 3:10 ·
       "Veinte Otoños" 3:53 (convertidas de WAV a MP3 192 kbps)
-- [ ] Generar el clip Higgsfield para el héroe (`frames/hero/`)
+- [x] Héroe: escena generativa como versión definitiva — jul 23 2026: el
+      clip de guitarra se veía desenfocado y barato; la escena generativa
+      (polvo de oro → melodía → corazón → pétalos) pesa 0 bytes y es nítida
+      en cualquier pantalla. Los fotogramas siguen en `frames/hero/`;
+      `USE_HERO_FRAMES` en cinematic.js los reactiva si hace falta.
 - [x] Conectar el flujo "Crear mi canción" al checkout — jul 16 2026:
       Stripe Payment Links en vivo (Verso/Serenata/Gran Gala) con códigos
       ESTRENO15 (15%, expira 15 ago), HOYSI10 ($10) y AMIGA20 ($20).

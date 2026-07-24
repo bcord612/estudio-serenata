@@ -89,6 +89,33 @@ function resize() {
 }
 window.addEventListener("resize", resize);
 
+/* ─────────── backdrop cinematográfico (foto nítida o vídeo sutil) ───────────
+   Capas de mejora progresiva bajo las partículas, con Ken Burns ligado al scroll:
+   1. saveData/2g → nada: la escena generativa pura (cero descargas)
+   2. foto nítida (~230KB) → aparece rápido, sirve de póster
+   3. vídeo cinemagráfico en bucle (~0.5MB, sin reduced-motion) → la fiesta
+      respira detrás de la guitarra quieta y nítida */
+const backdrop = { el: null, ready: false, isVideo: false };
+(function loadBackdrop() {
+  const conn = navigator.connection;
+  if (conn && (conn.saveData || /(^|-)2g$/.test(conn.effectiveType || ""))) return;
+  const portrait = window.innerHeight > window.innerWidth;
+  const img = new Image();
+  img.decoding = "async";
+  img.onload = () => { if (!backdrop.isVideo) { backdrop.el = img; backdrop.ready = true; } };
+  img.src = portrait ? "img/hero-portrait.jpg" : "img/hero-landscape.jpg";
+  if (REDUCE_MOTION) return;
+  const vid = document.createElement("video");
+  vid.muted = true; vid.loop = true; vid.playsInline = true;
+  vid.setAttribute("playsinline", "");
+  vid.preload = "auto";
+  vid.addEventListener("canplaythrough", () => {
+    vid.play().then(() => { backdrop.el = vid; backdrop.isVideo = true; backdrop.ready = true; }).catch(() => {});
+  }, { once: true });
+  /* misma escena que la foto póster de cada orientación */
+  vid.src = portrait ? "img/hero-loop-portrait.mp4" : "img/hero-loop-landscape.mp4";
+})();
+
 /* ─────────── generative scene: particles & bokeh ─────────── */
 const N = 850;
 const particles = [];
@@ -149,25 +176,45 @@ function buildTargets() {
 }
 
 function drawGenerative(p, time) {
-  /* background: candlelit night */
-  const g = ctx.createLinearGradient(0, 0, 0, H);
-  g.addColorStop(0, "#160b1a");
-  g.addColorStop(0.55, "#1d0e22");
-  g.addColorStop(1, "#2a1024");
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, W, H);
+  if (backdrop.ready) {
+    /* fondo: foto o vídeo nítido con zoom lento ligado al scroll (Ken Burns) */
+    const img = backdrop.el;
+    const iw = img.naturalWidth || img.videoWidth, ih = img.naturalHeight || img.videoHeight;
+    const zoom = 1.06 + p * 0.10;
+    const ir = iw / ih, cr = W / H;
+    let dw, dh;
+    if (ir > cr) { dh = H * zoom; dw = dh * ir; }
+    else { dw = W * zoom; dh = dw / ir; }
+    const dx = (W - dw) / 2;
+    const dy = (H - dh) / 2 - p * H * 0.05; // leve paneo ascendente
+    ctx.fillStyle = "#120a14";
+    ctx.fillRect(0, 0, W, H);
+    ctx.drawImage(img, dx, dy, dw, dh);
+    /* scrim: la foto cede el escenario conforme la historia avanza
+       (melodía → corazón → marca) sin perder el ambiente de velas */
+    ctx.fillStyle = `rgba(18,10,20,${0.16 + 0.52 * band(p, 0.3, 0.85)})`;
+    ctx.fillRect(0, 0, W, H);
+  } else {
+    /* sin foto (saveData/2g o aún cargando): noche de velas generativa */
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, "#160b1a");
+    g.addColorStop(0.55, "#1d0e22");
+    g.addColorStop(1, "#2a1024");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
 
-  /* drifting candle bokeh */
-  for (const b of bokeh) {
-    const bx = ((b.x + time * 0.000012 * b.drift) % 1.1) * W;
-    const by = (b.y + Math.sin(time * 0.0004 * b.drift + b.ph) * 0.02) * H;
-    const pulse = 0.5 + 0.5 * Math.sin(time * 0.001 * b.drift + b.ph);
-    const rg = ctx.createRadialGradient(bx, by, 0, bx, by, b.r);
-    const col = b.warm ? "217,166,81" : "232,93,138";
-    rg.addColorStop(0, `rgba(${col},${0.05 + 0.05 * pulse})`);
-    rg.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = rg;
-    ctx.fillRect(bx - b.r, by - b.r, b.r * 2, b.r * 2);
+    /* drifting candle bokeh (la foto ya trae el suyo) */
+    for (const b of bokeh) {
+      const bx = ((b.x + time * 0.000012 * b.drift) % 1.1) * W;
+      const by = (b.y + Math.sin(time * 0.0004 * b.drift + b.ph) * 0.02) * H;
+      const pulse = 0.5 + 0.5 * Math.sin(time * 0.001 * b.drift + b.ph);
+      const rg = ctx.createRadialGradient(bx, by, 0, bx, by, b.r);
+      const col = b.warm ? "217,166,81" : "232,93,138";
+      rg.addColorStop(0, `rgba(${col},${0.05 + 0.05 * pulse})`);
+      rg.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = rg;
+      ctx.fillRect(bx - b.r, by - b.r, b.r * 2, b.r * 2);
+    }
   }
 
   /* phase weights along scroll */

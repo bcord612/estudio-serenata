@@ -78,7 +78,8 @@ powershell -ExecutionPolicy Bypass -File serve.ps1
       → partículas generativas (melodía → corazón → pétalos) encima, con
       Ken Burns ligado al scroll y scrim progresivo. saveData/2g: escena
       generativa pura sin descargas; reduced-motion: foto fija.
-      El clip viejo de guitarra sigue en `frames/hero/` (`USE_HERO_FRAMES`).
+      El clip viejo de guitarra (`frames/hero/`) se quitó del repo para el
+      despliegue; sigue en el historial: `git checkout da9be23 -- frames/`.
 - [x] Conectar el flujo "Crear mi canción" al checkout — jul 16 2026:
       Stripe Payment Links en vivo (Verso/Serenata/Gran Gala) con códigos
       ESTRENO15 (15%, expira 15 ago), HOYSI10 ($10) y AMIGA20 ($20).

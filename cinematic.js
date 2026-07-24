@@ -37,7 +37,8 @@ let progress = 0;
 /* — detect Higgsfield frames — */
 /* Héroe generativo por decisión de diseño (jul 23 2026): el clip de guitarra
    se veía desenfocado y barato frente al resto del sitio. Los fotogramas
-   siguen en frames/hero/ y en git; cambia a true para recuperar la película. */
+   se quitaron del repo para aligerar el despliegue (Cloudflare) pero siguen
+   en el historial de git: `git checkout da9be23 -- frames/` los recupera. */
 const USE_HERO_FRAMES = false;
 (function detectFrames() {
   if (!USE_HERO_FRAMES) return;

@@ -84,6 +84,19 @@ h2 { font-size: clamp(2rem, 4.6vw, 3.4rem); text-align: center; margin-bottom: 1
   min-height: 44px; padding: 0 22px; font-size: 0.78rem; /* ≥44px objetivo táctil */
 }
 
+/* ── Selector de idioma ES/EN ── */
+.nav-right { display: flex; align-items: center; gap: 12px; }
+.lang-toggle {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 44px; min-width: 44px; padding: 0 12px;
+  background: transparent; border: 1px solid rgba(217,166,81,0.4);
+  border-radius: 999px; cursor: pointer;
+  font-family: var(--sans); font-weight: 500; font-size: 0.72rem;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--oro-2);
+  transition: border-color 0.25s, color 0.25s;
+}
+.lang-toggle:hover { border-color: var(--oro); color: var(--oro-2); }
+
 /* ── Héroe cinemático ── */
 .cinematic { position: relative; height: 520vh; }
 .sticky {
@@ -639,6 +652,8 @@ h2 { font-size: clamp(2rem, 4.6vw, 3.4rem); text-align: center; margin-bottom: 1
   .section { padding: 80px 20px; }
   .cinematic { height: 300vh; } /* menos swipes en móvil, la película corre más rápido */
   .nav { padding: 12px 16px; gap: 10px; }
+  .nav-right { gap: 8px; }
+  .lang-toggle { min-width: 40px; padding: 0 9px; font-size: 0.66rem; }
   .brand-casa { font-size: 0.62rem; letter-spacing: 0.3em; }
   .brand-sere { font-size: 1.3rem; }
   .nav-cta { padding: 8px 14px; font-size: 0.66rem; white-space: nowrap; flex-shrink: 0; }

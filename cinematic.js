@@ -12,6 +12,8 @@
 
 /* ───────────────────────── helpers ───────────────────────── */
 const REDUCE_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+/* idioma de la interfaz: español por defecto; inglés opcional (recordado) */
+let LANG = (() => { try { return localStorage.getItem("es-lang") === "en" ? "en" : "es"; } catch (_) { return "es"; } })();
 const clamp = (v, a, b) => Math.min(Math.max(v, a), b);
 const lerp = (a, b, t) => a + (b - a) * t;
 const smooth = (t) => t * t * (3 - 2 * t);
@@ -356,7 +358,7 @@ function updateHero(time) {
       frameReadout.textContent = `FOTOGRAMA ${String(idx + 1).padStart(3, "0")} / ${FRAME_COUNT} · ∞`;
     } else {
       drawGenerative(progress, time);
-      frameReadout.textContent = "ESCENA GENERATIVA · EN VIVO";
+      frameReadout.textContent = FLOW_TXT[LANG].readoutLive;
     }
   }
 
@@ -665,7 +667,8 @@ const paqContext = document.getElementById("paquetes-context");
 document.querySelectorAll(".occasion[data-context]").forEach(card => {
   const act = () => {
     if (paqContext) {
-      paqContext.textContent = `— ${card.dataset.context} —`;
+      const ctx = LANG === "en" ? (card.dataset.contextEn || card.dataset.context) : card.dataset.context;
+      paqContext.textContent = `— ${ctx} —`;
       paqContext.classList.add("show");
     }
     goTo("#paquetes");
@@ -711,7 +714,7 @@ const flowProgress = document.getElementById("flow-progress");
 const flowBack = document.getElementById("flow-back");
 const flowNext = document.getElementById("flow-next");
 
-const flowState = { occasion: null, relation: null, name: "", genre: null, date: null, pkg: "Serenata · $89 USD", story: "" };
+const flowState = { occasionIdx: null, relationIdx: null, name: "", genreIdx: null, genreCustom: "", dateIdx: null, pkg: "Serenata · $89 USD", story: "" };
 let flowStep = 0;
 let urgentConfirmArmed = false; // doble confirmación cuando la fiesta es esta semana con entrega estándar
 
@@ -722,76 +725,148 @@ let urgentConfirmArmed = false; // doble confirmación cuando la fiesta es esta 
 const ORDER_ENDPOINT = ""; // ← pegar la URL /exec del Web App al desplegarlo
 const PREFILL_PROMO = "ESTRENO15"; // se autocompleta en el checkout; "" para desactivar
 
+/* Paquetes: estructura estable (nombre/precio/pago/urgente). Las etiquetas y el
+   contenido traducibles viven en FLOW_TXT y se leen por índice. */
 const PKGS = [
-  { name: "Verso", price: "$39 USD", tag: "", urgente: false, pay: "https://buy.stripe.com/00wfZhfSwcktaR2730grS00",
-    includes: "Canción corta · Letra de su historia · MP3 · Entrega estándar (7–10 días)" },
-  { name: "Serenata", price: "$89 USD", tag: "La más pedida", urgente: false, pay: "https://buy.stripe.com/5kQ14n5dS98h1gsbjggrS01",
-    includes: "Canción completa (2–3 min) · Producción de estudio · MP3 + WAV · 1 revisión · Entrega 7–10 días" },
-  { name: "Gran Gala", price: "$199 USD", tag: "Urgente 72h", urgente: true, pay: "https://buy.stripe.com/aFafZh0XCfwFf7i0ECgrS02",
-    includes: "Experiencia narrativa completa · Producción premium · MP3 + WAV + letra enmarcable · Revisiones múltiples · Entrega urgente 72h" }
+  { name: "Verso", price: "$39 USD", urgente: false, pay: "https://buy.stripe.com/00wfZhfSwcktaR2730grS00" },
+  { name: "Serenata", price: "$89 USD", urgente: false, pay: "https://buy.stripe.com/5kQ14n5dS98h1gsbjggrS01" },
+  { name: "Gran Gala", price: "$199 USD", urgente: true, pay: "https://buy.stripe.com/aFafZh0XCfwFf7i0ECgrS02" }
 ];
 
-const FLOW_STEPS = [
-  { key: "occasion", kicker: "Paso 1 · La ocasión", title: "¿Qué celebramos?", auto: true,
-    options: ["Quinceañera", "Boda", "Aniversario", "Día de las Madres", "Cumpleaños", "Tributo", "Mi negocio", "Otra ocasión"] },
-  { key: "relation", kicker: "Paso 2 · La persona", title: "¿Para quién es la canción?", auto: false,
-    options: ["Mi hija", "Mi hijo", "Mi pareja", "Mi mamá", "Mi papá", "Otro ser querido"] },
-  { key: "genre", kicker: "Paso 3 · El sabor", title: "¿Qué género le encanta?", auto: true,
-    options: ["Vals", "Balada", "Cumbia", "Bachata", "Corrido", "Banda", "Mariachi", "Bolero", "Pop", "Ustedes elijan"] },
-  { key: "date", kicker: "Paso 4 · La fecha", title: "¿Cuándo es la fiesta?", auto: true,
-    options: ["Esta semana", "Este mes", "Tengo más tiempo"] },
-  { key: "final", kicker: "Paso 5 · Su historia", title: "Revise y cuéntenos lo esencial" }
-];
-
-const isUrgentDate = () => flowState.date === "Esta semana";
+/* ═══════════ Textos del flujo por idioma (ES por defecto) ═══════════
+   El paso de género termina en una opción "Otro" que abre un campo libre:
+   se compone cualquier estilo (salsa, reggaetón, norteño, lo que sea). */
+const FLOW_TXT = {
+  es: {
+    steps: [
+      { key: "occasion", kicker: "Paso 1 · La ocasión", title: "¿Qué celebramos?", auto: true,
+        options: ["Quinceañera", "Boda", "Aniversario", "Día de las Madres", "Cumpleaños", "Tributo", "Mi negocio", "Otra ocasión"] },
+      { key: "relation", kicker: "Paso 2 · La persona", title: "¿Para quién es la canción?", auto: false,
+        options: ["Mi hija", "Mi hijo", "Mi pareja", "Mi mamá", "Mi papá", "Otro ser querido"] },
+      { key: "genre", kicker: "Paso 3 · El sabor", title: "¿Qué género le encanta?", auto: true, custom: true,
+        customPh: "Escríbalo aquí — componemos cualquier estilo",
+        options: ["Vals", "Balada", "Cumbia", "Bachata", "Corrido", "Banda", "Mariachi", "Bolero", "Salsa", "Reggaetón", "Norteño", "Pop", "Otro"] },
+      { key: "date", kicker: "Paso 4 · La fecha", title: "¿Cuándo es la fiesta?", auto: true,
+        options: ["Esta semana", "Este mes", "Tengo más tiempo"] },
+      { key: "final", kicker: "Paso 5 · Su historia", title: "Revise y cuéntenos lo esencial" }
+    ],
+    back: "← Atrás", next: "Siguiente →", toPay: "Continuar al pago", moment: "Un momento…",
+    namePh: "El nombre de esa persona (opcional)",
+    pickPkg: "Elija su paquete", yourStory: "Su historia",
+    storyPh: "Un recuerdo, una anécdota, lo que quiere que diga la canción… (opcional)",
+    payNote: "Pago seguro con Stripe — tarjeta, Apple Pay o Google Pay. Su historia se guarda con su pedido.",
+    recapDash: "—", recapFor: "para", recapParty: "fiesta:", recapEdit: "Editar mis respuestas",
+    urgentTitle: "Su fiesta es esta semana.",
+    urgentBody: " La entrega estándar tarda 7–10 días y no llegaría a tiempo. Le recomendamos <strong>Gran Gala (entrega 72h)</strong> o escribirnos por WhatsApp para confirmar fechas.",
+    urgentSwap: "Cambiar a Gran Gala (72h)", urgentConfirm: "Entiendo, pagar entrega 7–10 días",
+    fallbackBody: "<strong>Un paso importante:</strong> para que su canción quede encargada, envíenos primero su resumen por WhatsApp — un toque y el mensaje ya va escrito. Después le llevamos al pago.",
+    fallbackWa: "Enviar mi resumen por WhatsApp", fallbackPaid: "Ya lo envié — continuar al pago",
+    pkgTags: ["", "La más pedida", "Urgente 72h"],
+    pkgIncludes: [
+      "Canción corta · Letra de su historia · MP3 · Entrega estándar (7–10 días)",
+      "Canción completa (2–3 min) · Producción de estudio · MP3 + WAV · 1 revisión · Entrega 7–10 días",
+      "Experiencia narrativa completa · Producción premium · MP3 + WAV + letra enmarcable · Revisiones múltiples · Entrega urgente 72h"
+    ],
+    wa: { greeting: "¡Hola! Quiero crear una canción personalizada 🎶", occasion: "Ocasión", forWhom: "Para", genre: "Género", party: "La fiesta es", pkg: "Paquete", story: "Nuestra historia", order: "Pedido" },
+    readoutLive: "ESCENA GENERATIVA · EN VIVO"
+  },
+  en: {
+    steps: [
+      { key: "occasion", kicker: "Step 1 · The occasion", title: "What are we celebrating?", auto: true,
+        options: ["Quinceañera", "Wedding", "Anniversary", "Mother's Day", "Birthday", "Tribute", "My business", "Other occasion"] },
+      { key: "relation", kicker: "Step 2 · The person", title: "Who is the song for?", auto: false,
+        options: ["My daughter", "My son", "My partner", "My mom", "My dad", "Another loved one"] },
+      { key: "genre", kicker: "Step 3 · The flavor", title: "What genre do they love?", auto: true, custom: true,
+        customPh: "Type it here — we compose any style",
+        options: ["Waltz", "Ballad", "Cumbia", "Bachata", "Corrido", "Banda", "Mariachi", "Bolero", "Salsa", "Reggaeton", "Norteño", "Pop", "Other"] },
+      { key: "date", kicker: "Step 4 · The date", title: "When is the party?", auto: true,
+        options: ["This week", "This month", "I have more time"] },
+      { key: "final", kicker: "Step 5 · Your story", title: "Review & tell us the essentials" }
+    ],
+    back: "← Back", next: "Next →", toPay: "Continue to payment", moment: "One moment…",
+    namePh: "That person's name (optional)",
+    pickPkg: "Choose your package", yourStory: "Your story",
+    storyPh: "A memory, an anecdote, what you want the song to say… (optional)",
+    payNote: "Secure payment with Stripe — card, Apple Pay, or Google Pay. Your story is saved with your order.",
+    recapDash: "—", recapFor: "for", recapParty: "party:", recapEdit: "Edit my answers",
+    urgentTitle: "Your party is this week.",
+    urgentBody: " Standard delivery takes 7–10 days and wouldn't arrive in time. We recommend <strong>Gran Gala (72h delivery)</strong> or messaging us on WhatsApp to confirm dates.",
+    urgentSwap: "Switch to Gran Gala (72h)", urgentConfirm: "I understand, pay for 7–10 day delivery",
+    fallbackBody: "<strong>One important step:</strong> to place your song order, first send us your summary on WhatsApp — one tap and the message is already written. Then we'll take you to payment.",
+    fallbackWa: "Send my summary on WhatsApp", fallbackPaid: "I sent it — continue to payment",
+    pkgTags: ["", "Most popular", "Rush 72h"],
+    pkgIncludes: [
+      "Short song · Lyrics from your story · MP3 · Standard delivery (7–10 days)",
+      "Full song (2–3 min) · Studio production · MP3 + WAV · 1 revision · 7–10 day delivery",
+      "Full narrative experience · Premium production · MP3 + WAV + frameable lyrics · Multiple revisions · 72h rush delivery"
+    ],
+    wa: { greeting: "Hi! I'd like to create a personalized song 🎶", occasion: "Occasion", forWhom: "For", genre: "Genre", party: "The party is", pkg: "Package", story: "Our story", order: "Order" },
+    readoutLive: "GENERATIVE SCENE · LIVE"
+  }
+};
+const FT = () => FLOW_TXT[LANG];
+const stepByKey = (k) => FT().steps.find(s => s.key === k);
+const isCustomStep = (step) => !!step.custom;
+const customIdxOf = (step) => step.options.length - 1;
+/* texto seleccionado de un paso-chip; si es la opción "Otro" devuelve el texto libre */
+const optText = (k) => {
+  const i = flowState[k + "Idx"];
+  if (i == null) return null;
+  const step = stepByKey(k);
+  if (isCustomStep(step) && i === customIdxOf(step)) {
+    return (flowState[k + "Custom"] || "").trim() || step.options[i];
+  }
+  return step.options[i];
+};
+const isUrgentDate = () => flowState.dateIdx === 0; // 0 = "Esta semana" / "This week"
 const selectedPkg = () => PKGS.find(p => flowState.pkg.startsWith(p.name));
 
-function chipGrid(options, selected, onPick) {
+function chipGrid(options, selectedIdx, onPick) {
   const grid = document.createElement("div");
   grid.className = "flow-chips";
-  for (const opt of options) {
+  options.forEach((opt, i) => {
     const b = document.createElement("button");
     b.type = "button";
-    b.className = "chip" + (selected === opt ? " sel" : "");
+    b.className = "chip" + (selectedIdx === i ? " sel" : "");
     b.textContent = opt;
     b.addEventListener("click", () => {
       grid.querySelectorAll(".chip").forEach(c => c.classList.remove("sel"));
       b.classList.add("sel");
-      onPick(opt);
+      onPick(i);
     });
     grid.appendChild(b);
-  }
+  });
   return grid;
 }
 
 function renderRecap() {
   /* recapitulación de todas las respuestas al abrir el paso de pago (nunca se paga a ciegas) */
+  const t = FT(), dash = t.recapDash;
   const recap = document.createElement("div");
   recap.className = "flow-recap";
-  const who = `${flowState.relation || "—"}${flowState.name.trim() ? " — " + flowState.name.trim() : ""}`;
+  const who = `${optText("relation") || dash}${flowState.name.trim() ? " — " + flowState.name.trim() : ""}`;
   recap.innerHTML =
-    `<strong>${flowState.occasion || "—"}</strong> · para <strong>${who}</strong> · ` +
-    `<strong>${flowState.genre || "—"}</strong> · fiesta: <strong>${flowState.date || "—"}</strong><br>`;
+    `<strong>${optText("occasion") || dash}</strong> · ${t.recapFor} <strong>${who}</strong> · ` +
+    `<strong>${optText("genre") || dash}</strong> · ${t.recapParty} <strong>${optText("date") || dash}</strong><br>`;
   const edit = document.createElement("button");
   edit.type = "button";
   edit.className = "recap-edit";
-  edit.textContent = "Editar mis respuestas";
+  edit.textContent = t.recapEdit;
   edit.addEventListener("click", () => { flowStep = 0; renderFlowStep(); });
   recap.appendChild(edit);
   return recap;
 }
 
 function renderUrgentWarning() {
+  const t = FT();
   const warn = document.createElement("div");
   warn.className = "flow-urgent";
-  warn.innerHTML =
-    `<strong>Su fiesta es esta semana.</strong> La entrega estándar tarda 7–10 días y no llegaría a tiempo. ` +
-    `Le recomendamos <strong>Gran Gala (entrega 72h)</strong> o escribirnos por WhatsApp para confirmar fechas.`;
+  warn.innerHTML = `<strong>${t.urgentTitle}</strong>${t.urgentBody}`;
   const swap = document.createElement("button");
   swap.type = "button";
   swap.className = "btn btn-gold";
   swap.style.cssText = "margin-top:12px;width:100%;text-align:center;";
-  swap.textContent = "Cambiar a Gran Gala (72h)";
+  swap.textContent = t.urgentSwap;
   swap.addEventListener("click", () => {
     const gg = PKGS.find(p => p.urgente);
     flowState.pkg = `${gg.name} · ${gg.price}`;
@@ -803,7 +878,9 @@ function renderUrgentWarning() {
 }
 
 function renderFlowStep() {
-  const step = FLOW_STEPS[flowStep];
+  const t = FT();
+  const steps = t.steps;
+  const step = steps[flowStep];
   flowBody.innerHTML = "";
   flowBody.scrollTop = 0;
   urgentConfirmArmed = false;
@@ -817,22 +894,42 @@ function renderFlowStep() {
   flowBody.append(kicker, title);
 
   if (step.key === "occasion" || step.key === "genre" || step.key === "date") {
-    flowBody.appendChild(chipGrid(step.options, flowState[step.key], (opt) => {
-      flowState[step.key] = opt;
+    const key = step.key, customIdx = customIdxOf(step);
+    flowBody.appendChild(chipGrid(step.options, flowState[key + "Idx"], (i) => {
+      flowState[key + "Idx"] = i;
+      const pickedCustom = isCustomStep(step) && i === customIdx;
       refreshFlowNav();
-      if (step.auto) setTimeout(() => { if (FLOW_STEPS[flowStep] === step) nextFlowStep(); }, 240);
+      if (pickedCustom) {
+        /* "Otro": revela el campo libre y NO auto-avanza */
+        renderFlowStep();
+        setTimeout(() => flowBody.querySelector(".flow-custom")?.focus(), 0);
+      } else if (step.auto) {
+        setTimeout(() => { const cur = FT().steps[flowStep]; if (cur && cur.key === step.key) nextFlowStep(); }, 240);
+      }
     }));
+    /* campo de género libre cuando "Otro" está elegido — se compone cualquier estilo */
+    if (isCustomStep(step) && flowState[key + "Idx"] === customIdx) {
+      const ci = document.createElement("input");
+      ci.className = "flow-input flow-custom";
+      ci.type = "text";
+      ci.maxLength = 40;
+      ci.style.marginTop = "12px";
+      ci.placeholder = step.customPh;
+      ci.value = flowState[key + "Custom"] || "";
+      ci.addEventListener("input", () => { flowState[key + "Custom"] = ci.value; refreshFlowNav(); });
+      flowBody.appendChild(ci);
+    }
   } else if (step.key === "relation") {
     const input = document.createElement("input");
     input.className = "flow-input";
     input.type = "text";
     input.maxLength = 60;
-    input.placeholder = "El nombre de esa persona (opcional)";
+    input.placeholder = t.namePh;
     input.value = flowState.name;
     input.addEventListener("input", () => { flowState.name = input.value; });
     flowBody.appendChild(input);
-    flowBody.appendChild(chipGrid(step.options, flowState.relation, (opt) => {
-      flowState.relation = opt;
+    flowBody.appendChild(chipGrid(step.options, flowState.relationIdx, (i) => {
+      flowState.relationIdx = i;
       refreshFlowNav();
     }));
   } else {
@@ -842,14 +939,15 @@ function renderFlowStep() {
 
     const lbl1 = document.createElement("p");
     lbl1.className = "flow-label";
-    lbl1.textContent = "Elija su paquete";
+    lbl1.textContent = t.pickPkg;
     flowBody.appendChild(lbl1);
-    for (const p of PKGS) {
+    PKGS.forEach((p, i) => {
       const val = `${p.name} · ${p.price}`;
+      const tag = t.pkgTags[i];
       const b = document.createElement("button");
       b.type = "button";
       b.className = "chip pkg-row" + (flowState.pkg === val ? " sel" : "");
-      b.innerHTML = `<span><span class="pkg-name">${p.name}</span>${p.tag ? ` <span class="pkg-tag">${p.tag}</span>` : ""}</span><span class="pkg-price">${p.price}</span>`;
+      b.innerHTML = `<span><span class="pkg-name">${p.name}</span>${tag ? ` <span class="pkg-tag">${tag}</span>` : ""}</span><span class="pkg-price">${p.price}</span>`;
       b.addEventListener("click", () => {
         flowState.pkg = val;
         renderFlowStep(); // re-dibuja: contenido bajo el paquete elegido + aviso de urgencia
@@ -859,46 +957,58 @@ function renderFlowStep() {
         /* el contenido del paquete, visible en el momento de decidir */
         const inc = document.createElement("p");
         inc.className = "pkg-includes";
-        inc.textContent = p.includes;
+        inc.textContent = t.pkgIncludes[i];
         flowBody.appendChild(inc);
       }
-    }
+    });
     const lbl2 = document.createElement("p");
     lbl2.className = "flow-label";
-    lbl2.textContent = "Su historia";
+    lbl2.textContent = t.yourStory;
     const ta = document.createElement("textarea");
     ta.className = "flow-textarea";
     ta.maxLength = 600;
-    ta.placeholder = "Un recuerdo, una anécdota, lo que quiere que diga la canción… (opcional)";
+    ta.placeholder = t.storyPh;
     ta.value = flowState.story;
     ta.addEventListener("input", () => { flowState.story = ta.value; });
     const note = document.createElement("p");
     note.className = "flow-note";
-    note.textContent = "Pago seguro con Stripe — tarjeta, Apple Pay o Google Pay. Su historia se guarda con su pedido.";
+    note.textContent = t.payNote;
     flowBody.append(lbl2, ta, note);
   }
 
-  flowProgress.style.transform = `scaleX(${(flowStep + 1) / FLOW_STEPS.length})`;
+  flowProgress.style.transform = `scaleX(${(flowStep + 1) / steps.length})`;
   flowBack.classList.toggle("hide", flowStep === 0);
-  flowNext.textContent = flowStep === FLOW_STEPS.length - 1 ? "Continuar al pago" : "Siguiente →";
+  flowBack.textContent = t.back;
+  flowNext.textContent = flowStep === steps.length - 1 ? t.toPay : t.next;
   refreshFlowNav();
 }
 
 function refreshFlowNav() {
-  const step = FLOW_STEPS[flowStep];
-  const ready = step.key === "final" || !!flowState[step.key];
+  const step = FT().steps[flowStep];
+  let ready;
+  if (step.key === "final") {
+    ready = true;
+  } else {
+    const i = flowState[step.key + "Idx"];
+    ready = i != null;
+    /* "Otro": requiere que el estilo escrito no esté vacío */
+    if (ready && isCustomStep(step) && i === customIdxOf(step)) {
+      ready = !!(flowState[step.key + "Custom"] || "").trim();
+    }
+  }
   flowNext.classList.toggle("off", !ready);
 }
 
 function buildWaUrl(orderId) {
-  const lines = ["¡Hola! Quiero crear una canción personalizada 🎶"];
-  if (flowState.occasion) lines.push(`• Ocasión: ${flowState.occasion}`);
-  if (flowState.relation) lines.push(`• Para: ${flowState.relation}${flowState.name.trim() ? " — " + flowState.name.trim() : ""}`);
-  if (flowState.genre) lines.push(`• Género: ${flowState.genre}`);
-  if (flowState.date) lines.push(`• La fiesta es: ${flowState.date}`);
-  lines.push(`• Paquete: ${flowState.pkg}`);
-  if (flowState.story.trim()) lines.push(`• Nuestra historia: ${flowState.story.trim()}`);
-  if (orderId) lines.push(`• Pedido: ${orderId}`);
+  const w = FT().wa;
+  const lines = [w.greeting];
+  if (optText("occasion")) lines.push(`• ${w.occasion}: ${optText("occasion")}`);
+  if (optText("relation")) lines.push(`• ${w.forWhom}: ${optText("relation")}${flowState.name.trim() ? " — " + flowState.name.trim() : ""}`);
+  if (optText("genre")) lines.push(`• ${w.genre}: ${optText("genre")}`);
+  if (optText("date")) lines.push(`• ${w.party}: ${optText("date")}`);
+  lines.push(`• ${w.pkg}: ${flowState.pkg}`);
+  if (flowState.story.trim()) lines.push(`• ${w.story}: ${flowState.story.trim()}`);
+  if (orderId) lines.push(`• ${w.order}: ${orderId}`);
   return `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(lines.join("\n"))}`;
 }
 
@@ -909,7 +1019,7 @@ function newOrderId() {
 function goToStripe(pkg, orderId) {
   const url = new URL(pkg.pay);
   url.searchParams.set("client_reference_id", orderId);
-  url.searchParams.set("locale", "es");
+  url.searchParams.set("locale", LANG); // Stripe muestra el checkout en el idioma elegido
   if (PREFILL_PROMO) url.searchParams.set("prefilled_promo_code", PREFILL_PROMO);
   window.location.href = url.toString();
 }
@@ -936,22 +1046,21 @@ async function registerOrder(payload) {
    WhatsApp se vuelve el camino obligatorio para que el encargo llegue al estudio. */
 function showOrderFallback(pkg, orderId) {
   flowBody.querySelector(".flow-order-fallback")?.remove();
+  const t = FT();
   const box = document.createElement("div");
   box.className = "flow-order-fallback";
-  box.innerHTML =
-    `<strong>Un paso importante:</strong> para que su canción quede encargada, ` +
-    `envíenos primero su resumen por WhatsApp — un toque y el mensaje ya va escrito. Después le llevamos al pago.`;
+  box.innerHTML = t.fallbackBody;
   const waBtn = document.createElement("a");
   waBtn.className = "btn btn-gold";
   waBtn.href = buildWaUrl(orderId);
   waBtn.target = "_blank";
   waBtn.rel = "noopener";
-  waBtn.textContent = "Enviar mi resumen por WhatsApp";
+  waBtn.textContent = t.fallbackWa;
   const payBtn = document.createElement("button");
   payBtn.type = "button";
   payBtn.className = "btn btn-line";
   payBtn.style.cssText = "margin-top:10px;width:100%;text-align:center;opacity:0.45;pointer-events:none;";
-  payBtn.textContent = "Ya lo envié — continuar al pago";
+  payBtn.textContent = t.fallbackPaid;
   waBtn.addEventListener("click", () => {
     /* al abrir WhatsApp se desbloquea el pago */
     payBtn.style.opacity = "1";
@@ -961,7 +1070,7 @@ function showOrderFallback(pkg, orderId) {
   box.append(waBtn, payBtn);
   flowBody.appendChild(box);
   box.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  flowNext.textContent = "Continuar al pago";
+  flowNext.textContent = t.toPay;
   refreshFlowNav();
 }
 
@@ -974,20 +1083,21 @@ async function submitOrderAndPay() {
     urgentConfirmArmed = true;
     if (!flowBody.querySelector(".flow-urgent")) flowBody.prepend(renderUrgentWarning());
     flowBody.querySelector(".flow-urgent")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    flowNext.textContent = "Entiendo, pagar entrega 7–10 días";
+    flowNext.textContent = FT().urgentConfirm;
     return;
   }
 
   const orderId = newOrderId();
   const payload = {
     orderId,
-    ocasion: flowState.occasion,
-    para: flowState.relation,
+    ocasion: optText("occasion"),
+    para: optText("relation"),
     nombre: flowState.name.trim(),
-    genero: flowState.genre,
-    fechaEvento: flowState.date,
+    genero: optText("genre"),
+    fechaEvento: optText("date"),
     paquete: flowState.pkg,
     historia: flowState.story.trim(),
+    idioma: LANG,
     pagina: location.href,
     fecha: new Date().toISOString()
   };
@@ -995,7 +1105,7 @@ async function submitOrderAndPay() {
   try { localStorage.setItem("es-ultimo-pedido", JSON.stringify(payload)); } catch (_) {}
 
   flowNext.classList.add("off");
-  flowNext.textContent = "Un momento…";
+  flowNext.textContent = FT().moment;
 
   const registered = await registerOrder(payload);
   if (!registered) {
@@ -1007,7 +1117,7 @@ async function submitOrderAndPay() {
 }
 
 function nextFlowStep() {
-  if (flowStep === FLOW_STEPS.length - 1) {
+  if (flowStep === FT().steps.length - 1) {
     submitOrderAndPay();
     return;
   }
@@ -1047,3 +1157,34 @@ document.getElementById("flow-wa-link")?.addEventListener("click", (e) => {
 });
 document.getElementById("flow-close").addEventListener("click", closeFlow);
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !flowEl.hidden) closeFlow(); });
+
+/* ═══════════ Cambio de idioma ES / EN ═══════════
+   El español es la fuente en el HTML; cada elemento traducible lleva data-en.
+   En la primera pasada se captura el español (el._es) y luego se intercambia.
+   Se conservan los elementos (y sus listeners): solo cambia su innerHTML. */
+const langToggle = document.getElementById("lang-toggle");
+
+function applyStaticLang() {
+  document.querySelectorAll("[data-en]").forEach(el => {
+    if (el._es === undefined) el._es = el.innerHTML; // captura el español original una vez
+    el.innerHTML = LANG === "en" ? el.getAttribute("data-en") : el._es;
+  });
+  document.documentElement.lang = LANG;
+  document.title = LANG === "en"
+    ? "Estudio Serenata — Your story, made song"
+    : "Estudio Serenata — Tu historia, hecha canción";
+  if (langToggle) {
+    langToggle.textContent = LANG === "en" ? "ES" : "EN";
+    langToggle.setAttribute("aria-label", LANG === "en" ? "Cambiar a español" : "Switch to English");
+  }
+}
+
+function setLang(lang) {
+  LANG = lang === "en" ? "en" : "es";
+  try { localStorage.setItem("es-lang", LANG); } catch (_) {}
+  applyStaticLang();
+  if (flowEl && !flowEl.hidden) renderFlowStep(); // redibuja el flujo abierto en el nuevo idioma
+}
+
+langToggle?.addEventListener("click", () => setLang(LANG === "en" ? "es" : "en"));
+applyStaticLang(); // aplica el idioma recordado al cargar

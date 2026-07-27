@@ -12,6 +12,11 @@
   --rosa:    #e85d8a;
   --crema:   #f8edda;
   --ink-dim: rgba(248, 237, 218, 0.66);
+  /* curvas de animación: entradas y salidas suaves, sin cortes bruscos.
+     --ease-out para lo que aparece o se desliza; --ease-soft para lo que
+     va y viene (hover, barras) — ambas se detienen sin golpe. */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
   --serif: "Cormorant Garamond", Georgia, serif;
   --sans: "DM Sans", system-ui, sans-serif;
   --script: "Great Vibes", cursive;
@@ -50,7 +55,7 @@ h2 { font-size: clamp(2rem, 4.6vw, 3.4rem); text-align: center; margin-bottom: 1
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid rgba(217,166,81,0.14);
-  transition: transform 0.35s ease;
+  transition: transform 0.5s var(--ease-out);
 }
 .nav.hidden { transform: translateY(-100%); }
 .nav-brand { text-decoration: none; display: inline-flex; align-items: baseline; gap: 7px; }
@@ -68,7 +73,7 @@ h2 { font-size: clamp(2rem, 4.6vw, 3.4rem); text-align: center; margin-bottom: 1
   display: inline-block; text-decoration: none; cursor: pointer;
   font-family: var(--sans); font-weight: 500; font-size: 0.9rem;
   letter-spacing: 0.1em; text-transform: uppercase;
-  padding: 13px 28px; border-radius: 999px; transition: all 0.3s ease;
+  padding: 13px 28px; border-radius: 999px; transition: all 0.35s var(--ease-soft);
 }
 .btn-gold {
   background: linear-gradient(135deg, var(--oro), var(--oro-2) 55%, var(--oro));
@@ -176,6 +181,10 @@ h2 { font-size: clamp(2rem, 4.6vw, 3.4rem); text-align: center; margin-bottom: 1
 .skip-film.gone { opacity: 0; pointer-events: none; }
 .scroll-hint span { display: inline-block; animation: bob 1.8s ease-in-out infinite; }
 @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+
+/* Línea de claridad del héroe: solo móvil, siempre visible mientras corre la
+   intro — dice qué vendemos sin esperar a que termine la película. */
+.hero-clarity { display: none; }
 
 /* ── Secciones genéricas ── */
 .section { padding: 110px 24px; max-width: 1180px; margin: 0 auto; }
@@ -469,7 +478,7 @@ h2 { font-size: clamp(2rem, 4.6vw, 3.4rem); text-align: center; margin-bottom: 1
   display: none; align-items: center; gap: 10px;
   padding: 12px 14px calc(12px + env(safe-area-inset-bottom, 0px));
   background: linear-gradient(180deg, rgba(18,10,20,0), rgba(18,10,20,0.88) 26%, rgba(13,7,16,0.96));
-  transition: transform 0.35s ease;
+  transition: transform 0.5s var(--ease-out);
 }
 .cta-bar.hidden { transform: translateY(110%); }
 .cta-bar-btn {
@@ -515,7 +524,7 @@ h2 { font-size: clamp(2rem, 4.6vw, 3.4rem); text-align: center; margin-bottom: 1
   box-shadow: 0 0 10px rgba(217,166,81,0.5);
   /* escala en lugar de width: anima en el compositor, sin relayout */
   transform: scaleX(0.2); transform-origin: left;
-  transition: transform 0.35s ease;
+  transition: transform 0.5s var(--ease-out);
 }
 .flow-close {
   background: none; border: none; cursor: pointer;
@@ -618,7 +627,7 @@ h2 { font-size: clamp(2rem, 4.6vw, 3.4rem); text-align: center; margin-bottom: 1
 
 /* ── Animaciones de aparición ── */
 /* --reveal-scale permite que elementos con escala propia (.tier-featured) la conserven tras la animación */
-.reveal { opacity: 0; transform: translateY(34px) scale(var(--reveal-scale, 1)); transition: opacity 0.9s ease, transform 0.9s ease; }
+.reveal { opacity: 0; transform: translateY(34px) scale(var(--reveal-scale, 1)); transition: opacity 1s var(--ease-out), transform 1s var(--ease-out); }
 .reveal.in { opacity: 1; transform: translateY(0) scale(var(--reveal-scale, 1)); }
 
 /* ── Menos movimiento ── */
@@ -650,14 +659,36 @@ h2 { font-size: clamp(2rem, 4.6vw, 3.4rem); text-align: center; margin-bottom: 1
 
   .sample { flex-direction: row; padding: 16px 18px; gap: 14px; }
   .section { padding: 80px 20px; }
-  .cinematic { height: 300vh; } /* menos swipes en móvil, la película corre más rápido */
+  /* ── Héroe móvil: UNA sola pantalla, la intro se reproduce sola ──
+     Antes eran 300vh pegajosos: la foto no se movía al deslizar y la página
+     parecía trabada (usuarios mayores no sabían cómo bajar). Ahora el héroe
+     mide una pantalla, la película corre sola y la página baja normal. */
+  .cinematic { height: 100vh; height: 100svh; }
+  .sticky { height: 100vh; height: 100svh; }
+  .skip-film { display: none; }  /* no hay nada que saltar: la intro corre sola */
+  .progress { display: none; }   /* barra de avance de scroll: ya no aplica */
+
+  /* invitación a bajar: legible, brillante y presente mientras el héroe
+     está en pantalla — es LA señal de "aquí se sigue hacia abajo" */
+  .scroll-hint {
+    bottom: 90px; font-size: 13px; letter-spacing: 0.24em;
+    color: var(--oro-2); text-shadow: 0 2px 10px rgba(8,3,10,0.9);
+  }
+
+  .hero-clarity {
+    display: block;
+    position: absolute; bottom: 126px; left: 50%; transform: translateX(-50%);
+    z-index: 12; width: min(86vw, 420px); text-align: center;
+    font-size: 0.95rem; line-height: 1.5; color: var(--crema);
+    text-shadow: 0 2px 10px rgba(8,3,10,0.95), 0 6px 24px rgba(8,3,10,0.85);
+  }
+
   .nav { padding: 12px 16px; gap: 10px; }
   .nav-right { gap: 8px; }
   .lang-toggle { min-width: 40px; padding: 0 9px; font-size: 0.66rem; }
   .brand-casa { font-size: 0.62rem; letter-spacing: 0.3em; }
   .brand-sere { font-size: 1.3rem; }
   .nav-cta { padding: 8px 14px; font-size: 0.66rem; white-space: nowrap; flex-shrink: 0; }
-  .skip-film { top: 66px; right: 16px; padding: 8px 13px; }
   .telemetry.br { display: none; } /* evita choque con el contador de fotogramas */
 
   /* barra CTA fija reemplaza al botón flotante */

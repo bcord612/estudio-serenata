@@ -12,6 +12,9 @@
 
 /* ───────────────────────── helpers ───────────────────────── */
 const REDUCE_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+/* móvil = intro automática en una sola pantalla (ver updateHero) */
+const mqMobile = window.matchMedia("(max-width: 880px)");
+const isAutoFilm = () => mqMobile.matches;
 /* idioma de la interfaz: español por defecto; inglés opcional (recordado) */
 let LANG = (() => { try { return localStorage.getItem("es-lang") === "en" ? "en" : "es"; } catch (_) { return "es"; } })();
 const clamp = (v, a, b) => Math.min(Math.max(v, a), b);
@@ -107,7 +110,11 @@ const backdrop = { el: null, ready: false, isVideo: false };
   img.decoding = "async";
   img.onload = () => { if (!backdrop.isVideo) { backdrop.el = img; backdrop.ready = true; } };
   img.src = portrait ? "img/hero-portrait.jpg" : "img/hero-landscape.jpg";
-  if (REDUCE_MOTION) return;
+  /* En móvil, foto fija: el héroe descansa en su fotograma final y un vídeo
+     en bucle salta al reiniciarse (el corte se notaba). La foto no tiene
+     costura, ahorra ~400KB de datos y deja el zoom lento como único
+     movimiento. El vídeo se queda en escritorio, donde la película avanza. */
+  if (REDUCE_MOTION || isAutoFilm()) return;
   const vid = document.createElement("video");
   vid.muted = true; vid.loop = true; vid.playsInline = true;
   vid.setAttribute("playsinline", "");
@@ -194,8 +201,11 @@ function drawGenerative(p, time) {
     ctx.fillRect(0, 0, W, H);
     ctx.drawImage(img, dx, dy, dw, dh);
     /* scrim: la foto cede el escenario conforme la historia avanza
-       (melodía → corazón → marca) sin perder el ambiente de velas */
-    ctx.fillStyle = `rgba(18,10,20,${0.16 + 0.52 * band(p, 0.3, 0.85)})`;
+       (melodía → corazón → marca) sin perder el ambiente de velas.
+       En móvil el héroe DESCANSA en el fotograma final, así que se oscurece
+       menos: la guitarra y la fiesta siguen vendiendo el producto. */
+    const scrimMax = isAutoFilm() ? 0.30 : 0.52;
+    ctx.fillStyle = `rgba(18,10,20,${0.16 + scrimMax * band(p, 0.3, 0.85)})`;
     ctx.fillRect(0, 0, W, H);
   } else {
     /* sin foto (saveData/2g o aún cargando): noche de velas generativa */
@@ -343,12 +353,36 @@ function drawFrame(index) {
 const FILM_SPEED = Math.PI / 8000; // 8s por dirección, ciclo completo 16s
 const filmCycle = (t) => (1 - Math.cos(t * FILM_SPEED)) / 2;
 
+/* ───────── intro automática en móvil (una sola pantalla) ─────────
+   En escritorio la película se scrubbea con el scroll (520vh pegajosos).
+   En móvil eso confundía: la foto no se movía al deslizar y la página
+   parecía trabada. Aquí la película se reproduce sola en ~12s, descansa
+   en su fotograma final (marca + botón) y la página baja con normalidad. */
+const AUTO_FILM_MS = 12000;
+/* punto de reposo = centro del último verso, donde se ve al 100% */
+const finalLine = section.querySelector(".line-final");
+const HOLD_AT = finalLine
+  ? (parseFloat(finalLine.dataset.in) + parseFloat(finalLine.dataset.out)) / 2
+  : 0.89;
+let autoT0 = null;
+
 /* ─────────────── scroll update for the hero ─────────────── */
 function updateHero(time) {
   const rect = section.getBoundingClientRect();
-  const scrollable = rect.height - window.innerHeight;
-  progress = clamp(-rect.top / scrollable, 0, 1);
   const visible = rect.bottom > 0 && rect.top < window.innerHeight;
+
+  if (isAutoFilm()) {
+    if (autoT0 === null && visible) autoT0 = time; // arranca al verse
+    const k = autoT0 === null ? 0 : clamp((time - autoT0) / AUTO_FILM_MS, 0, 1);
+    /* mezcla lineal + suavizado: arranca y se posa con suavidad, pero
+       mantiene el ritmo parejo entre versos (un smoothstep puro los
+       amontonaría en el centro) */
+    const eased = 0.5 * k + 0.5 * smooth(k);
+    progress = REDUCE_MOTION ? HOLD_AT : HOLD_AT * eased;
+  } else {
+    const scrollable = rect.height - window.innerHeight;
+    progress = scrollable > 0 ? clamp(-rect.top / scrollable, 0, 1) : 0;
+  }
 
   if (visible) {
     if (mode === "frames") {
@@ -369,8 +403,9 @@ function updateHero(time) {
     const mid = (a + b) / 2, half = (b - a) / 2;
     let o = 1 - Math.abs(progress - mid) / half;
     o = clamp(o * 1.4, 0, 1); // plateau so text holds longer
+    o = smooth(o); // curva suave: los versos se funden sin arranques ni cortes
     el.style.opacity = o.toFixed(3);
-    el.style.transform = `translate(-50%, calc(-50% + ${(1 - o) * 26}px))`;
+    el.style.transform = `translate(-50%, calc(-50% + ${((1 - o) * 26).toFixed(2)}px))`;
     el.style.pointerEvents = o > 0.5 ? "auto" : "none";
   }
 }
@@ -686,13 +721,20 @@ function raf(time) {
   updateHero(REDUCE_MOTION && mode !== "frames" ? 0 : time);
   drawCTA(REDUCE_MOTION ? 0 : time);
   const hint = document.getElementById("scroll-hint");
-  hint.style.opacity = window.scrollY > 80 ? "0" : "1";
-  const inFilm = progress > 0.02 && progress < 0.97 && window.scrollY > 10;
+  /* en móvil la invitación a bajar acompaña todo el héroe (antes desaparecía
+     al primer deslizamiento, justo cuando más falta hacía) */
+  const hintGone = isAutoFilm()
+    ? window.scrollY > window.innerHeight * 0.5
+    : window.scrollY > 80;
+  hint.style.opacity = hintGone ? "0" : "1";
+  /* con la intro automática nunca se esconde el menú ni el botón:
+     el usuario siempre tiene a la vista cómo salir y cómo comprar */
+  const inFilm = !isAutoFilm() && progress > 0.02 && progress < 0.97 && window.scrollY > 10;
   nav.classList.toggle("hidden", inFilm);
   if (ctaBar) {
     /* la barra aparece desde la mitad de la película (antes se escondía toda la intro)
        y se oculta cuando el CTA final ya está en pantalla */
-    const inFirstHalfOfFilm = progress > 0.02 && progress < 0.5 && window.scrollY > 10;
+    const inFirstHalfOfFilm = !isAutoFilm() && progress > 0.02 && progress < 0.5 && window.scrollY > 10;
     const finalVisible = ctaFinal && ctaFinal.getBoundingClientRect().top < window.innerHeight * 0.6;
     ctaBar.classList.toggle("hidden", inFirstHalfOfFilm || finalVisible);
   }

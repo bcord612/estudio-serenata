@@ -574,14 +574,19 @@ function playDemo(card, name) {
   };
 }
 
-function playFile(card, audioEl) {
+function playFile(card, audioEl, onFailure) {
   const srcNode = audioEl._node || actx.createMediaElementSource(audioEl);
   audioEl._node = srcNode;
   srcNode.connect(analyser);
   analyser.connect(actx.destination);
-  audioEl.play(); // reanuda donde quedó; "ended" lo regresa a 0
   const onEnd = () => { if (activeSample && activeSample.card === card) stopActive(); };
   audioEl.addEventListener("ended", onEnd, { once: true });
+  /* reanuda donde quedó; "ended" lo regresa a 0. Si el archivo no se puede
+     reproducir, avisamos para caer al demo sintetizado. */
+  audioEl.play().catch(() => {
+    audioEl.removeEventListener("ended", onEnd);
+    onFailure();
+  });
   return { stop() { audioEl.pause(); audioEl.removeEventListener("ended", onEnd); } };
 }
 
@@ -590,19 +595,34 @@ const fmtTime = (s) => {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 };
 
+/* La nota de demos sintetizados solo aplica si de verdad falta algún mp3. */
+const demoNote = document.querySelector(".demo-note");
+const fileStates = new Map(); // card -> "unknown" | "present" | "missing"
+function refreshDemoNote() {
+  if (!demoNote) return;
+  demoNote.hidden = ![...fileStates.values()].includes("missing");
+}
+
 players.forEach(card => {
   const name = card.dataset.demo;
-  /* probe for a real file — loadedmetadata, no canplaythrough: el navegador
-     aborta la descarga completa del probe y canplaythrough nunca dispara */
+  /* Probe del archivo real. Tres estados, no dos: "unknown" NO significa que
+     falte. Con preload="metadata" Safari/iOS aplaza la descarga hasta que hay
+     un gesto del usuario, así que en el primer clic el estado sigue siendo
+     unknown y tratarlo como "no existe" hacía sonar el demo sintetizado en
+     lugar de la canción real. */
   const real = new Audio();
   real.preload = "metadata";
-  let hasReal = false;
+  fileStates.set(card, "unknown");
   real.addEventListener("loadedmetadata", () => {
-    hasReal = true;
-    const note = document.querySelector(".demo-note");
-    if (note) note.hidden = true; // la nota solo aplica a los demos sintetizados
+    fileStates.set(card, "present");
+    refreshDemoNote();
+  }, { once: true });
+  real.addEventListener("error", () => {
+    fileStates.set(card, "missing");
+    refreshDemoNote();
   }, { once: true });
   real.src = `audio/${name}.mp3`;
+  refreshDemoNote();
 
   /* barra de progreso + tiempo (solo canciones reales) */
   const seek = document.createElement("div");
@@ -639,9 +659,22 @@ players.forEach(card => {
     stopActive();
     if (wasThis) return; // toggled off
 
-    const useReal = hasReal || real.readyState >= 1;
-    if (useReal) { seek.hidden = false; updateSeek(); }
-    const handle = useReal ? playFile(card, real) : playDemo(card, name);
+    /* Solo caemos al demo sintetizado cuando sabemos que el mp3 no existe. */
+    const startDemo = () => {
+      if (!activeSample || activeSample.card !== card) return;
+      seek.hidden = true;
+      activeSample.stop = playDemo(card, name).stop;
+    };
+
+    let handle;
+    if (fileStates.get(card) === "missing") {
+      seek.hidden = true;
+      handle = playDemo(card, name);
+    } else {
+      seek.hidden = false;
+      updateSeek();
+      handle = playFile(card, real, startDemo);
+    }
     activeSample = { card, stop: handle.stop };
     card.classList.add("playing");
     const svg = card.querySelector(".play svg");

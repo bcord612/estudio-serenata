@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mi Camino Creativo</title>
+<meta name="description" content="Seguimiento del plan de Canva y CapCut para Estudio Serenata.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 30C24 8 4 6 3 21c-1 14 15 19 29 13Z' fill='%23B98CE0'/%3E%3Cpath d='M32 30c8-22 28-24 29-9 1 14-15 19-29 13Z' fill='%236FC3E0'/%3E%3Cpath d='M32 30C25 46 8 50 6 40c-2-9 12-13 26-10Z' fill='%23FF9EC4'/%3E%3Cpath d='M32 30c7 16 24 20 26 10 2-9-12-13-26-10Z' fill='%23FFC96F'/%3E%3Crect x='30.5' y='16' width='3' height='30' rx='1.5' fill='%233B2A4A'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+  :root{
+    --bg:#FFFBF6;
+    --surface:#FFFFFF;
+    --surface-alt:#F5EEFC;
+    --surface-soft:#FFF3F8;
+    --text:#3B2A4A;
+    --text-soft:#7A6B8A;
+    --text-faint:#A497B5;
+    --accent:#B98CE0;
+    --accent-strong:#9558C9;
+    --accent2:#6FC3E0;
+    --accent3:#FF9EC4;
+    --success:#4FAE7D;
+    --success-bg:#E6F6EE;
+    --warn:#E0A82E;
+    --border:#EADFF5;
+    --shadow: 0 2px 10px rgba(151,105,201,0.10), 0 1px 2px rgba(151,105,201,0.08);
+    color-scheme: light;
+  }
+  *{box-sizing:border-box;}
+  html,body{background:var(--bg);}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Nunito',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    font-style:normal;
+    padding-inline:16px;
+    max-width:760px;
+    margin:0 auto;
+    padding-block:28px 60px;
+    line-height:1.5;
+  }
+  h1,h2,h3,.display{
+    font-family:'Baloo 2','Nunito',sans-serif;
+    font-weight:700;
+    letter-spacing:0.2px;
+  }
+  em, i, .never-italic{font-style:normal;}
+
+  /* ---------- decorative butterflies ---------- */
+  .bf{position:absolute;pointer-events:none;opacity:0.55;z-index:-1;}
+  .hero{position:relative;overflow:visible;padding-block:6px 18px;}
+  .hero-title{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .hero-title h1{font-size:clamp(26px,5vw,34px);margin:0;color:var(--accent-strong);}
+  .hero-sub{color:var(--text-soft);margin:6px 0 0;font-size:15px;}
+  .butterfly-svg{width:34px;height:34px;flex:none;}
+
+  /* ---------- top stat row ---------- */
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:10px;
+    margin:18px 0 22px;
+  }
+  .stat{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:14px 10px;
+    text-align:center;
+    box-shadow:var(--shadow);
+  }
+  .stat .num{
+    font-family:'Baloo 2',sans-serif;
+    font-size:22px;
+    font-weight:700;
+    color:var(--accent-strong);
+    font-variant-numeric: tabular-nums;
+  }
+  .stat .lbl{font-size:11.5px;color:var(--text-soft);margin-top:2px;}
+  @media (max-width:480px){
+    .stats{grid-template-columns:repeat(2,1fr);}
+  }
+
+  .level-pill{
+    display:inline-flex;align-items:center;gap:6px;
+    background:linear-gradient(135deg,var(--accent),var(--accent3));
+    color:#fff;padding:6px 14px;border-radius:999px;
+    font-weight:700;font-size:13.5px;margin-bottom:16px;
+    box-shadow:var(--shadow);
+  }
+
+  /* ---------- cards ---------- */
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:20px;
+    margin-bottom:18px;
+    box-shadow:var(--shadow);
+    position:relative;
+  }
+  .card h2{font-size:18px;margin:0 0 4px;color:var(--text);}
+  .card .eyebrow{
+    text-transform:uppercase;font-size:11px;letter-spacing:1px;
+    color:var(--accent-strong);font-weight:700;margin:0 0 6px;
+  }
+
+  .today-card{
+    background:linear-gradient(160deg,var(--surface-alt),var(--surface-soft));
+    border:1px solid var(--border);
+  }
+  .today-card h2{font-size:21px;color:var(--accent-strong);}
+  .today-week{color:var(--text-faint);font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;}
+  .block-label{font-weight:700;font-size:13px;color:var(--text);margin:12px 0 3px;display:flex;align-items:center;gap:6px;}
+  .block-text{font-size:14.5px;color:var(--text-soft);margin:0;}
+
+  .btn{
+    appearance:none;border:none;cursor:pointer;
+    font-family:'Nunito',sans-serif;font-weight:700;font-size:14.5px;
+    border-radius:12px;padding:11px 18px;
+    background:var(--accent-strong);color:#fff;
+    box-shadow:0 3px 0 #7c3fa8;
+    transition:transform .05s ease;
+    display:inline-flex;align-items:center;gap:4px;
+    text-decoration:none;line-height:1.2;
+  }
+  .btn:active{transform:translateY(2px);box-shadow:0 1px 0 #7c3fa8;}
+  .btn:disabled{background:var(--success);box-shadow:0 3px 0 #2f7d57;cursor:default;}
+  .btn.secondary{
+    background:var(--surface);color:var(--accent-strong);
+    border:1.5px solid var(--accent);box-shadow:none;
+  }
+  .btn.small{padding:7px 12px;font-size:12.5px;border-radius:10px;box-shadow:0 2px 0 #7c3fa8;}
+  .btn.small:active{box-shadow:0 0 0 #7c3fa8;}
+  .btn.small.secondary{box-shadow:none;}
+
+  .actions-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center;}
+  .done-tag{
+    display:inline-flex;align-items:center;gap:6px;
+    color:var(--success);font-weight:700;font-size:14px;
+    background:var(--success-bg);padding:8px 14px;border-radius:12px;
+  }
+
+  /* ---------- weekly strip ---------- */
+  .week-strip{display:flex;gap:8px;margin-top:10px;}
+  .dot{
+    flex:1;height:10px;border-radius:6px;background:var(--border);
+  }
+  .dot.done{background:var(--success);}
+  .dot.today{outline:2px solid var(--accent-strong);outline-offset:1px;}
+
+  /* ---------- rewards ---------- */
+  .rewards-grid{display:grid;gap:12px;grid-template-columns:repeat(2,1fr);}
+  @media (max-width:520px){ .rewards-grid{grid-template-columns:1fr;} }
+  .reward{
+    border:1px dashed var(--accent);
+    border-radius:16px;padding:14px;
+    background:var(--surface-soft);
+  }
+  .reward.locked{opacity:0.55;}
+  .reward.claimed{border-style:solid;border-color:#cdeadd;background:var(--success-bg);}
+  .reward .rtitle{font-weight:700;font-size:14.5px;color:var(--accent-strong);margin:0 0 4px;display:flex;justify-content:space-between;gap:8px;align-items:baseline;}
+  .reward .rprogress{font-size:12px;color:var(--text-soft);font-variant-numeric:tabular-nums;}
+  .reward textarea{
+    width:100%;border:1px solid var(--border);border-radius:10px;
+    padding:8px 10px;font-family:inherit;font-size:14px;color:var(--text);
+    background:var(--surface);resize:vertical;min-height:38px;margin-bottom:8px;
+  }
+  .claim-btn{
+    width:100%;text-align:center;border-radius:10px;padding:7px;font-size:12.5px;font-weight:700;
+    border:1.5px solid var(--accent);background:var(--surface);color:var(--accent-strong);cursor:pointer;
+  }
+  .claim-btn.is-claimed{background:var(--success);border-color:var(--success);color:#fff;}
+  .bar{height:8px;border-radius:6px;background:var(--border);margin-top:8px;overflow:hidden;}
+  .bar > span{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent3));}
+
+  /* ---------- history ---------- */
+  .week-block{margin-bottom:14px;}
+  .week-head{
+    display:flex;align-items:center;justify-content:space-between;
+    cursor:pointer;padding:10px 4px;
+  }
+  .week-head h3{margin:0;font-size:15.5px;color:var(--text);}
+  .week-head .wstat{font-size:12.5px;color:var(--text-soft);font-variant-numeric:tabular-nums;}
+  .chev{transition:transform .15s ease;color:var(--accent-strong);font-size:14px;}
+  .week-block.open .chev{transform:rotate(90deg);}
+  .sessions{display:none;flex-direction:column;gap:8px;padding-top:4px;}
+  .week-block.open .sessions{display:flex;}
+  .session-row{
+    display:flex;align-items:center;gap:10px;
+    border:1px solid var(--border);border-radius:12px;padding:10px 12px;
+    background:var(--surface);
+  }
+  .session-row.done{background:var(--success-bg);border-color:#cdeadd;}
+  .s-num{
+    flex:none;width:26px;height:26px;border-radius:8px;
+    background:var(--surface-alt);color:var(--accent-strong);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:12.5px;
+  }
+  .session-row.done .s-num{background:var(--success);color:#fff;}
+  .s-body{flex:1;min-width:0;}
+  .s-title{font-weight:700;font-size:14px;color:var(--text);}
+  .s-meta{font-size:11.5px;color:var(--text-faint);margin-top:1px;}
+
+  details.rules{
+    border:1px solid var(--border);border-radius:16px;padding:14px 16px;background:var(--surface);
+  }
+  details.rules summary{cursor:pointer;font-weight:700;color:var(--accent-strong);font-size:14.5px;}
+  details.rules ol{margin:10px 0 0;padding-left:20px;font-size:13.5px;color:var(--text-soft);}
+  details.rules li{margin-bottom:6px;}
+
+  .res-week{
+    text-transform:uppercase;font-size:11px;letter-spacing:1px;color:var(--accent-strong);
+    font-weight:700;margin:16px 0 8px;
+  }
+  .res-week:first-child{margin-top:0;}
+  .res-item{
+    scroll-margin-top:16px;
+    border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:8px;
+    background:var(--surface);
+  }
+  .res-item.repaso{background:var(--surface-soft);border-style:dashed;}
+  .res-item.highlight{outline:2px solid var(--accent-strong);outline-offset:1px;}
+  .res-head{display:flex;align-items:baseline;gap:8px;margin-bottom:3px;}
+  .res-title{font-weight:700;font-size:14px;}
+  .res-note{font-size:13px;color:var(--text-soft);margin:2px 0 7px;}
+  .res-link{
+    display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;
+    text-decoration:none;background:var(--surface-alt);color:var(--accent-strong);
+    padding:6px 11px;border-radius:9px;
+  }
+  .res-link .src{font-weight:400;color:var(--text-faint);font-size:11.5px;margin-left:1px;}
+
+  .footer-note{
+    text-align:center;color:var(--text-faint);font-size:12px;margin-top:22px;line-height:1.6;
+  }
+  .sync-pill{
+    display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-soft);
+    background:var(--surface-alt);padding:5px 12px;border-radius:999px;margin-bottom:14px;
+  }
+  .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--success);}
+  .banner{
+    background:var(--surface-soft);border:1px solid var(--border);
+    border-radius:14px;padding:12px 14px;font-size:13px;color:var(--text-soft);
+    margin-bottom:16px;
+  }
+  .toast{
+    position:fixed;left:50%;bottom:22px;transform:translate(-50%,10px);
+    background:var(--text);color:#fff;padding:10px 18px;border-radius:999px;
+    font-size:13.5px;font-weight:700;box-shadow:var(--shadow);
+    opacity:0;pointer-events:none;transition:opacity .2s ease, transform .2s ease;
+    z-index:10;white-space:nowrap;
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0);}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <svg class="bf" style="top:-6px;right:10px;width:60px;height:60px;transform:rotate(12deg);" viewBox="0 0 64 64"><g fill="#FF9EC4" opacity="0.5"><path d="M32 30C24 10 6 8 4 22c-2 13 12 18 28 12Z"/><path d="M32 30c8-20 26-22 28-8 2 13-12 18-28 12Z"/></g></svg>
+  <div class="hero-title">
+    <svg class="butterfly-svg" viewBox="0 0 64 64"><g><path d="M32 30C24 8 4 6 3 21c-1 14 15 19 29 13Z" fill="#B98CE0"/><path d="M32 30c8-22 28-24 29-9 1 14-15 19-29 13Z" fill="#6FC3E0"/><path d="M32 30C25 46 8 50 6 40c-2-9 12-13 26-10Z" fill="#FF9EC4"/><path d="M32 30c7 16 24 20 26 10 2-9-12-13-26-10Z" fill="#FFC96F"/><rect x="30.5" y="16" width="3" height="30" rx="1.5" fill="#3B2A4A"/></g></svg>
+    <h1>Mi Camino Creativo</h1>
+  </div>
+  <p class="hero-sub">Canva + CapCut para Estudio Serenata &middot; 6 semanas &middot; 30 sesiones</p>
+</div>
+
+<div id="syncPill" class="sync-pill"><span class="sync-dot"></span><span id="syncText">Guardado en este teléfono</span></div>
+
+<div id="levelPill" class="level-pill">🦋 Explorando Canva</div>
+
+<div class="stats">
+  <div class="stat"><div class="num" id="statPoints">0</div><div class="lbl">Puntos</div></div>
+  <div class="stat"><div class="num" id="statStreak">0</div><div class="lbl">Racha sin saltos</div></div>
+  <div class="stat"><div class="num" id="statDone">0/30</div><div class="lbl">Sesiones</div></div>
+  <div class="stat"><div class="num" id="statWeeks">0/6</div><div class="lbl">Semanas completas</div></div>
+</div>
+
+<div class="card today-card">
+  <div class="today-week" id="todayWeek">Semana 1</div>
+  <h2 id="todayTitle">Cargando...</h2>
+  <div class="block-label">🎓 Aprender</div>
+  <p class="block-text" id="todayLearn"></p>
+  <div class="block-label">🎯 Practicar</div>
+  <p class="block-text" id="todayPractice"></p>
+  <div class="week-strip" id="todayStrip"></div>
+  <div class="actions-row">
+    <button class="btn" id="markBtn">Marcar como completada hoy</button>
+    <button class="btn secondary small" id="pickOtherBtn">Elegir otra sesión</button>
+    <button type="button" class="btn secondary small" id="todayResource">🎬 Ver recurso</button>
+  </div>
+</div>
+
+<div class="card">
+  <p class="eyebrow">Compartir</p>
+  <h2 style="margin-bottom:4px;">Avísale a William</h2>
+  <p class="block-text" style="margin-bottom:12px;">Este progreso se guarda solo en tu teléfono. Toca el botón para enviarle a William un resumen por WhatsApp, mensaje o correo.</p>
+  <button type="button" class="btn" id="shareBtn">📤 Compartir mi progreso</button>
+</div>
+
+<div class="card">
+  <p class="eyebrow">Recompensas</p>
+  <h2 style="margin-bottom:4px;">Un premio por cada semana completa</h2>
+  <p class="block-text" style="margin-bottom:12px;">Al terminar las 5 sesiones de la semana, ella elige su premio. Escríbanlo aquí para no olvidarlo.</p>
+  <div class="rewards-grid" id="rewardsGrid"></div>
+</div>
+
+<div class="card">
+  <p class="eyebrow">Progreso</p>
+  <h2 style="margin-bottom:10px;">Las 6 semanas</h2>
+  <div id="weeksWrap"></div>
+</div>
+
+<div class="card">
+  <p class="eyebrow">Recursos</p>
+  <h2 style="margin-bottom:4px;">🎬 Un video o guía por sesión</h2>
+  <p class="block-text" style="margin-bottom:12px;">Toca "Ver recurso" en cualquier sesión para saltar aquí directo.</p>
+  <div id="resourcesWrap"></div>
+</div>
+
+<details class="rules">
+  <summary>Reglas del programa</summary>
+  <ol>
+    <li>5 sesiones por semana, 30-40 minutos, casi siempre después de las 8 PM. 2 días libres, flexibles.</li>
+    <li>30% aprender + 70% practicar. No hace falta ver un tutorial completo: mira 5 minutos, pausa, hazlo tú, continúa.</li>
+    <li>No se busca perfección. El primer diseño será feo. El segundo, menos feo.</li>
+    <li>Guardar todo, incluso los primeros intentos. Son parte del portafolio.</li>
+    <li>Copiar para aprender, nunca para publicar. Lo final siempre es original.</li>
+    <li>Si un día no da, el mínimo son 15 minutos. Nunca cero.</li>
+  </ol>
+</details>
+
+<p class="footer-note" id="lastActivity"></p>
+<p class="footer-note">Cada noche a las 9:00 PM (hora de Miami) les llega un recordatorio por correo a los dos.</p>
+<p class="footer-note">🦋 Mi Camino Creativo — hecho con cariño para Maydelis.</p>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const SESSIONS = [
+    {w:1,t:"Conociendo Canva",l:"Mira un tutorial de introducción a Canva (busca \"Canva para principiantes\" en YouTube) o la Canva Design School en español, unos 15-20 minutos.",p:"Crea tu cuenta y explora sin miedo: Inicio, Plantillas, Elementos, Texto, Subidos, Fotos, Videos. No memorices nada, solo explora."},
+    {w:1,t:"Plantillas",l:"Cómo buscar plantillas, cambiar fotos, colores, textos y duplicar diseños.",p:"Busca una plantilla de Instagram Post que te guste y haz 3 versiones: cambiando colores, cambiando las fotos, cambiando todo el texto."},
+    {w:1,t:"Texto y tipografía",l:"Tipos de letra, tamaños, peso, espaciado, alineación y jerarquía visual.",p:"Crea una publicación usando solo fondo + texto + 1 elemento gráfico. Que se vea profesional sin usar fotos."},
+    {w:1,t:"Fotos de Estudio Serenata",l:"Cómo subir fotos, recortar, ajustar transparencia, marcos y quitar fondos en Canva.",p:"Usa una foto real de Estudio Serenata (o una que represente el negocio) y crea un antes/después: una versión con fondo normal y otra con el fondo eliminado."},
+    {w:1,t:"Colores de marca",l:"Colores complementarios, contraste y cómo elegir colores de marca.",p:"Elige 2 colores principales + 1 color de acento para Estudio Serenata y crea una publicación usando solo esos colores y máximo 2 tipografías."},
+    {w:2,t:"Composición",l:"Alineación, espacios, márgenes, tamaño y jerarquía visual.",p:"Busca 3 publicaciones de marcas que te gusten y recréalas desde cero (sin publicarlas) para entender cómo están armadas."},
+    {w:2,t:"Primer post real",l:"Repasa lo aprendido esta semana: fotos, texto, color y composición.",p:"Crea la primera publicación real para Estudio Serenata: foto + título + beneficio + llamada a la acción + nombre de marca. ¡Guárdala en tu portafolio!"},
+    {w:2,t:"Conociendo CapCut",l:"Tutorial básico de CapCut: crear proyecto, importar video, timeline, cortar, dividir, eliminar, reorganizar y exportar.",p:"Graba 5 videos cortos con tu teléfono (no tienen que ser buenos) y practica importarlos y cortarlos."},
+    {w:2,t:"Hooks y guiones",l:"Hoy no es una herramienta, es contenido: un video necesita captar atención en los primeros segundos. Ejemplos: \"3 cosas que no sabías sobre...\", \"Antes de comprar esto, mira esto\", \"El error que casi todos cometen...\".",p:"Escribe 10 hooks para Estudio Serenata y elige tus 3 favoritos."},
+    {w:2,t:"Cortar como editora",l:"Cortar silencios, eliminar errores, acortar clips, cambiar el orden y crear ritmo.",p:"Toma un video de 60 segundos y conviértelo en uno de 30, y luego en uno de 15. Editar también es eliminar."},
+    {w:3,t:"Diseño para Instagram",l:"Formatos, plantillas y consistencia de marca para redes sociales.",p:"Crea 1 Instagram Post + 1 Story + 1 portada de Reel para Estudio Serenata."},
+    {w:3,t:"Stories",l:"Cómo estructurar una Story en varias páginas.",p:"Crea una Story de 3 páginas: Problema → Solución → Llamada a la acción."},
+    {w:3,t:"Carruseles",l:"Cómo crear un carrusel efectivo.",p:"Crea un carrusel de 5 páginas: Hook, Problema, Información, Solución, CTA."},
+    {w:3,t:"Texto en CapCut",l:"Texto, fuentes, tamaños, colores y animaciones en CapCut.",p:"Haz un video de 15 segundos con estructura Hook → Información → CTA."},
+    {w:3,t:"Música y audio",l:"Música, volumen, efectos, fade in/out y voz en CapCut.",p:"Haz un video con voz + música de fondo + 1 efecto de sonido. La música acompaña, no compite."},
+    {w:4,t:"Identidad visual",l:"Qué es una identidad visual: nombre, colores, tipografías, estilo de foto y de gráficos.",p:"Define (o repasa) la identidad visual de Estudio Serenata y guárdala en una carpeta de Canva llamada \"MARCA — CONTENIDO\"."},
+    {w:4,t:"Contenido con IA en Canva",l:"Cómo usar Canva IA para generar ideas, diseños e imágenes.",p:"Usa Canva IA para generar 5 ideas de publicaciones, 5 titulares y 3 ideas de Stories para Estudio Serenata."},
+    {w:4,t:"Subtítulos",l:"Subtítulos automáticos en CapCut.",p:"Graba un video hablando 20-30 segundos y agrega subtítulos, texto destacado y una animación sencilla."},
+    {w:4,t:"Transiciones",l:"Cortes, transiciones, zoom, movimiento y velocidad. Regla: no uses una transición distinta en cada corte.",p:"Edita un video usando transiciones simples y consistentes."},
+    {w:4,t:"Semana de contenido",l:"Cómo planear una semana de publicaciones.",p:"Diseña 5 piezas para Estudio Serenata: Lunes educativo, Martes producto, Miércoles Story, Jueves consejo, Viernes promoción."},
+    {w:5,t:"Primer reel real",l:"Repasa cortes, texto, música y subtítulos.",p:"Crea un Reel de 15-30 segundos para Estudio Serenata con video, cortes, texto, música, subtítulos y CTA. Guárdalo como PORTAFOLIO — VIDEO 01."},
+    {w:5,t:"B-Roll",l:"Qué es el B-roll: imágenes o videos de apoyo mientras alguien habla.",p:"Graba una explicación de 30 segundos sobre Estudio Serenata y agrega 3-5 clips de apoyo."},
+    {w:5,t:"Keyframes y movimiento",l:"Zoom in, zoom out, movimiento, posición y keyframes en CapCut.",p:"Convierte una foto de producto en un video dinámico de 5-7 segundos."},
+    {w:5,t:"Plantillas de CapCut",l:"Cómo usar plantillas para acelerar la edición.",p:"Encuentra 3 plantillas, estúdialas (¿por qué funcionan?) y crea tu propia versión sin publicar las originales."},
+    {w:5,t:"Paquete de marca",l:"Repasa todo lo aprendido en Canva estas semanas.",p:"Crea un mini paquete para Estudio Serenata: 3 posts + 2 Stories + 1 carrusel + 1 portada de Reel. Guárdalo como PORTAFOLIO — PROYECTO 01."},
+    {w:6,t:"Video de producto",l:"Estructura: 0-3s Hook, 3-10s Problema, 10-20s Producto/solución, 20-30s CTA.",p:"Crea un video de 20-30 segundos para Estudio Serenata con esa estructura."},
+    {w:6,t:"Video educativo",l:"Cómo enseñar algo útil en video.",p:"Crea \"3 cosas que debes saber sobre las canciones personalizadas\" usando texto, voz, B-roll, subtítulos y música."},
+    {w:6,t:"Video promocional",l:"Problema → Producto → Beneficio → CTA, sin gritar \"¡compra ahora!\" cada 2 segundos.",p:"Crea un Reel para vender Estudio Serenata que sea interesante primero y promocional después."},
+    {w:6,t:"Semana real completa",l:"Hoy se junta todo lo aprendido.",p:"Crea la semana completa para Estudio Serenata: en Canva 2 posts + 2 Stories + 1 carrusel + 1 portada de Reel; en CapCut 2 Reels + 1 video educativo + 1 video promocional."},
+    {w:6,t:"Presentación final",l:"Organiza todo tu trabajo.",p:"Crea la carpeta PORTAFOLIO con: Canva (3 proyectos), CapCut (3 videos), Marca (colores, tipografías, logo, guía visual) y Contenido (ideas, hooks, calendario, captions). ¡Terminaste el programa!"}
+  ];
+  const RESOURCES = [
+    {note:"Mira los primeros 15-20 minutos: cuenta, panel principal y cómo empezar un diseño.", link:"https://www.youtube.com/watch?v=pIl-JKvHj3A", src:"YouTube"},
+    {note:"Cómo buscar, cambiar y personalizar plantillas.", link:"https://www.canva.com/es_419/design-school/courses/", src:"Canva Design School"},
+    {note:"Jerarquía, tamaños y combinación de fuentes.", link:"https://www.canva.com/es_mx/aprende/diseno-tipografico-terminos-consejos-trucos/", src:"Canva Aprende"},
+    {note:"Cómo quitar el fondo de una imagen, paso a paso.", link:"https://www.youtube.com/watch?v=d85tNSsvjzA", src:"YouTube"},
+    {note:"Cómo armar una paleta de colores desde cero.", link:"https://www.youtube.com/watch?v=4aTjCfJJ9rs", src:"YouTube"},
+    {note:"Cómo se organiza el ojo en un diseño: alineación, espacio y jerarquía.", link:"https://www.canva.com/es_mx/aprende/guia-jerarquia-visual-design-school/", src:"Canva Aprende"},
+    {repaso:"Repasa los recursos de los días 1, 3, 4 y 5.", anchor:1},
+    {note:"Interfaz, importar video, cortar y exportar.", link:"https://www.youtube.com/watch?v=fzH1yiq4MYw", src:"YouTube"},
+    {note:"50 ejemplos de ganchos para copiar y adaptar.", link:"https://rutacreadora.com/50-hooks-virales-videos-cortos/", src:"Ruta Creadora"},
+    {note:"Guía completa de edición y ritmo en CapCut.", link:"https://filmora.wondershare.es/more-tips/how-to-edit-on-capcut.html", src:"Filmora"},
+    {note:"Cómo diseñar posts para Instagram con Canva.", link:"https://www.labiznagadigital.es/blog/como-disenar-tus-posts-con-canva-para-instagram/", src:"La Biznaga Digital"},
+    {note:"Cómo crear historias de Instagram que destaquen.", link:"https://www.canva.com/es_es/design-school/lessons/create-standout-instagram-stories", src:"Canva Design School"},
+    {note:"Cómo armar un carrusel completo en Canva.", link:"https://www.youtube.com/watch?v=zuHNWvkJneg", src:"YouTube"},
+    {repaso:"El tutorial del Día 8 ya cubre texto y animaciones básicas.", anchor:8},
+    {note:"Cómo agregar audio a un video, paso a paso (oficial CapCut).", link:"https://www.capcut.com/es-es/tools/add-audio-to-video", src:"CapCut"},
+    {note:"20 tips prácticos para una identidad visual exitosa.", link:"https://www.canva.com/es_mx/aprende/20-tips-practicos-para-crear-identidad-visual-exitosa/", src:"Canva Aprende"},
+    {note:"Cómo usar el Estudio Mágico de Canva.", link:"https://www.youtube.com/watch?v=xNEUlMQRBjo", src:"YouTube"},
+    {note:"Subtítulos automáticos, fácil y rápido.", link:"https://www.youtube.com/watch?v=KDWtrZT8SkY", src:"YouTube"},
+    {note:"Cómo agregar transiciones de video (guía oficial).", link:"https://www.capcut.com/es-es/resource/add-video-transition-online", src:"CapCut"},
+    {repaso:"Design School tiene ideas de planificación de contenido.", anchor:2},
+    {repaso:"Repasa los recursos de CapCut de las semanas 2 a 4.", anchor:8},
+    {note:"Cómo crear videos estilo B-Roll para redes sociales.", link:"https://www.youtube.com/watch?v=taXbbiaA9pM", src:"YouTube"},
+    {note:"Cómo hacer zoom con keyframes en CapCut (video en inglés, fácil de seguir por los pasos en pantalla).", link:"https://www.youtube.com/watch?v=OKxfNZv37Tw", src:"YouTube"},
+    {note:"Cómo usar y exportar plantillas (guía oficial).", link:"https://www.capcut.com/es-es/help/use-and-export-templates-in-capcut", src:"CapCut"},
+    {repaso:"Repasa los recursos de Canva de las semanas 1 a 4.", anchor:1},
+    {note:"Cómo escribir un guion de video que engancha.", link:"https://jezzmedia.com/guiones-de-video-que-retienen-estructura-y-ejemplos/", src:"Jezz Media"},
+    {note:"Reels educativos que venden: hooks, storytelling y CTA.", link:"https://corialquicira.com/reels-educativos-que-venden-hooks-storytelling-y-cta-a-whatsapp", src:"Cori Alquicira"},
+    {note:"Cómo hacer un video promocional que genere ventas.", link:"https://www.produccionesmaster.com.mx/blog/estrategias-video/video-promocional-ventas.html", src:"Producciones Master"},
+    {repaso:"Usa todo lo de arriba: ya tienes lo necesario.", anchor:1},
+    {repaso:"No necesitas un recurso nuevo: organiza y guarda tu trabajo.", anchor:null}
+  ];
+  const LEVELS = [
+    {min:0,label:"🦋 Explorando Canva"},
+    {min:61,label:"🎨 Diseñadora en camino"},
+    {min:151,label:"🎬 Creadora en acción"},
+    {min:241,label:"✂️ Editora en ascenso"},
+    {min:331,label:"👑 Creadora de Contenido"}
+  ];
+  const STORAGE_KEY = 'caminoCreativoState.v1';
+  let state = {sessions:{}, rewards:{}};
+  let selectedId = null;
+  let resourcesRendered = false;
+
+  function load(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){ state = Object.assign({sessions:{}, rewards:{}}, JSON.parse(raw)); }
+    }catch(e){ /* start fresh if storage is unavailable or corrupt */ }
+  }
+  function save(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    catch(e){ document.getElementById('syncText').textContent = 'No se pudo guardar en este teléfono'; }
+  }
+
+  function fmtDate(iso){
+    if(!iso) return "";
+    const d = new Date(iso);
+    return d.toLocaleDateString('es-ES',{day:'numeric',month:'short'}) + ' · ' + d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+  }
+
+  function computeStats(){
+    let doneCount = 0;
+    let points = 0;
+    let streak = 0;
+    let streakBroken = false;
+    let weeksComplete = 0;
+    for(let i=1;i<=30;i++){
+      const s = state.sessions[i];
+      const isDone = !!(s && s.done);
+      if(isDone){
+        doneCount++; points += 10;
+        if(!streakBroken) streak++;
+      } else {
+        streakBroken = true;
+      }
+    }
+    for(let w=1; w<=6; w++){
+      const start = (w-1)*5+1, end = w*5;
+      let all = true;
+      for(let i=start;i<=end;i++){ if(!(state.sessions[i] && state.sessions[i].done)) { all = false; break; } }
+      if(all){ weeksComplete++; points += 15; }
+    }
+    return {doneCount, points, streak, weeksComplete};
+  }
+
+  function levelFor(points){
+    let cur = LEVELS[0];
+    for(const lv of LEVELS){ if(points >= lv.min) cur = lv; }
+    return cur.label;
+  }
+
+  function nextPendingId(){
+    for(let i=1;i<=30;i++){ if(!(state.sessions[i] && state.sessions[i].done)) return i; }
+    return 30;
+  }
+
+  function render(){
+    const stats = computeStats();
+    document.getElementById('statPoints').textContent = stats.points;
+    document.getElementById('statStreak').textContent = stats.streak;
+    document.getElementById('statDone').textContent = stats.doneCount + '/30';
+    document.getElementById('statWeeks').textContent = stats.weeksComplete + '/6';
+    document.getElementById('levelPill').textContent = levelFor(stats.points);
+
+    if(!selectedId) selectedId = nextPendingId();
+    const sess = SESSIONS[selectedId-1];
+    const isDone = !!(state.sessions[selectedId] && state.sessions[selectedId].done);
+    document.getElementById('todayWeek').textContent = 'Semana ' + sess.w + ' · Sesión ' + selectedId + ' de 30';
+    document.getElementById('todayTitle').textContent = sess.t;
+    document.getElementById('todayLearn').textContent = sess.l;
+    document.getElementById('todayPractice').textContent = sess.p;
+    document.getElementById('todayResource').dataset.goto = selectedId;
+
+    const markBtn = document.getElementById('markBtn');
+    const actionsRow = markBtn.parentElement;
+    let doneTag = document.getElementById('doneTag');
+    if(isDone){
+      markBtn.hidden = true;
+      if(!doneTag){
+        doneTag = document.createElement('span');
+        doneTag.id = 'doneTag';
+        doneTag.className = 'done-tag';
+        actionsRow.insertBefore(doneTag, markBtn);
+      }
+      doneTag.hidden = false;
+      doneTag.textContent = '✓ Completada · ' + fmtDate(state.sessions[selectedId].completedAt);
+    } else {
+      markBtn.hidden = false;
+      if(doneTag) doneTag.hidden = true;
+    }
+
+    // week strip for the session's week
+    const strip = document.getElementById('todayStrip');
+    strip.innerHTML = '';
+    const wStart = (sess.w-1)*5+1;
+    for(let i=wStart;i<wStart+5;i++){
+      const d = document.createElement('div');
+      d.className = 'dot' + ((state.sessions[i]&&state.sessions[i].done)?' done':'') + (i===selectedId?' today':'');
+      strip.appendChild(d);
+    }
+
+    renderRewards();
+    renderWeeks();
+    if(!resourcesRendered){ renderResources(); resourcesRendered = true; }
+
+    const lastAct = document.getElementById('lastActivity');
+    if(state.updatedAt){
+      lastAct.textContent = 'Última actividad registrada: ' + fmtDate(state.updatedAt);
+    } else {
+      lastAct.textContent = '';
+    }
+  }
+
+  function weekDoneCount(w){
+    const start = (w-1)*5+1, end = w*5;
+    let n = 0;
+    for(let i=start;i<=end;i++){ if(state.sessions[i] && state.sessions[i].done) n++; }
+    return n;
+  }
+
+  function renderRewards(){
+    const grid = document.getElementById('rewardsGrid');
+    const focusedKey = document.activeElement && document.activeElement.tagName === 'TEXTAREA' ? document.activeElement.dataset.week : null;
+    grid.innerHTML = '';
+    for(let w=1; w<=6; w++){
+      const done = weekDoneCount(w);
+      const unlocked = done >= 5;
+      const rw = (state.rewards && state.rewards[w]) || {};
+      const card = document.createElement('div');
+      card.className = 'reward' + (unlocked?'':' locked') + (rw.claimed?' claimed':'');
+      card.innerHTML =
+        '<div class="rtitle"><span>🦋 Semana '+w+'</span><span class="rprogress">'+done+'/5</span></div>' +
+        '<textarea data-week="'+w+'" placeholder="Su premio a elegir..."></textarea>' +
+        '<button type="button" class="claim-btn' + (rw.claimed?' is-claimed':'') + '">' + (rw.claimed ? '🎁 Premio entregado' : (unlocked ? 'Marcar premio como entregado' : 'Se desbloquea al completar la semana')) + '</button>';
+      const ta = card.querySelector('textarea');
+      if(String(focusedKey) !== String(w)){ ta.value = rw.text || ''; }
+      let t;
+      ta.addEventListener('input', ()=>{ clearTimeout(t); t = setTimeout(saveReward, 500); });
+      ta.addEventListener('blur', saveReward);
+      function saveReward(){
+        state.rewards[w] = Object.assign({}, state.rewards[w], {text: ta.value});
+        state.updatedAt = new Date().toISOString();
+        save();
+      }
+      const claimBtn = card.querySelector('.claim-btn');
+      claimBtn.disabled = !unlocked;
+      claimBtn.addEventListener('click', ()=>{
+        if(!unlocked) return;
+        const cur = (state.rewards && state.rewards[w]) || {};
+        state.rewards[w] = Object.assign({}, cur, {claimed: !cur.claimed});
+        state.updatedAt = new Date().toISOString();
+        renderRewards();
+        save();
+      });
+      grid.appendChild(card);
+    }
+  }
+
+  function goToResource(id){
+    const el = document.getElementById('r' + id);
+    if(!el) return;
+    document.querySelectorAll('.res-item.highlight').forEach(e=>e.classList.remove('highlight'));
+    el.classList.add('highlight');
+    el.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  function renderResources(){
+    const wrap = document.getElementById('resourcesWrap');
+    wrap.innerHTML = '';
+    for(let w=1; w<=6; w++){
+      const wLabel = document.createElement('div');
+      wLabel.className = 'res-week';
+      wLabel.textContent = '🦋 Semana ' + w;
+      wrap.appendChild(wLabel);
+      const start = (w-1)*5+1, end = w*5;
+      for(let i=start;i<=end;i++){
+        const sess = SESSIONS[i-1];
+        const res = RESOURCES[i-1];
+        const item = document.createElement('div');
+        item.id = 'r' + i;
+        item.className = 'res-item' + (res.repaso ? ' repaso' : '');
+        let html = '<div class="res-head"><span class="s-num">'+i+'</span><span class="res-title">'+sess.t+'</span></div>';
+        if(res.repaso){
+          html += '<p class="res-note">'+res.repaso+'</p>';
+          if(res.anchor){
+            html += '<a class="res-link" href="javascript:void(0)" data-goto="'+res.anchor+'">↑ Ir al recurso</a>';
+          }
+        } else {
+          html += '<p class="res-note">'+res.note+'</p>';
+          html += '<a class="res-link" href="'+res.link+'" target="_blank" rel="noopener">Ver recurso <span class="src">· '+res.src+'</span></a>';
+        }
+        item.innerHTML = html;
+        const gotoLink = item.querySelector('[data-goto]');
+        if(gotoLink){ gotoLink.addEventListener('click', ()=>{ goToResource(gotoLink.dataset.goto); }); }
+        wrap.appendChild(item);
+      }
+    }
+  }
+
+  function renderWeeks(){
+    const wrap = document.getElementById('weeksWrap');
+    const openWeeks = Array.from(wrap.querySelectorAll('.week-block.open')).map(el=>el.dataset.week);
+    wrap.innerHTML = '';
+    for(let w=1; w<=6; w++){
+      const start = (w-1)*5+1, end = w*5;
+      let doneInWeek = 0;
+      for(let i=start;i<=end;i++){ if(state.sessions[i] && state.sessions[i].done) doneInWeek++; }
+      const block = document.createElement('div');
+      block.className = 'week-block' + (openWeeks.includes(String(w)) || (selectedId>=start&&selectedId<=end) ? ' open':'');
+      block.dataset.week = w;
+      const head = document.createElement('div');
+      head.className = 'week-head';
+      head.innerHTML = '<h3>Semana ' + w + '</h3><span class="wstat">' + doneInWeek + '/5 <span class="chev">▸</span></span>';
+      head.addEventListener('click', ()=>{ block.classList.toggle('open'); });
+      block.appendChild(head);
+      const list = document.createElement('div');
+      list.className = 'sessions';
+      for(let i=start;i<=end;i++){
+        const sess = SESSIONS[i-1];
+        const isDone = !!(state.sessions[i] && state.sessions[i].done);
+        const row = document.createElement('div');
+        row.className = 'session-row' + (isDone?' done':'');
+        const num = document.createElement('div');
+        num.className = 's-num';
+        num.textContent = isDone ? '✓' : i;
+        const body = document.createElement('div');
+        body.className = 's-body';
+        body.innerHTML = '<div class="s-title">'+sess.t+'</div><div class="s-meta">'+(isDone?('Completada '+fmtDate(state.sessions[i].completedAt)):'Pendiente')+'</div>';
+        row.appendChild(num); row.appendChild(body);
+        const resLink = document.createElement('button');
+        resLink.type = 'button';
+        resLink.className = 'btn small secondary';
+        resLink.textContent = '🎬';
+        resLink.title = 'Ver recurso';
+        resLink.addEventListener('click', (e)=>{ e.stopPropagation(); goToResource(i); });
+        row.appendChild(resLink);
+        const btn = document.createElement('button');
+        btn.className = 'btn small' + (isDone?' secondary':'');
+        btn.textContent = isDone ? 'Ver aquí' : 'Marcar';
+        btn.addEventListener('click', (e)=>{
+          e.stopPropagation();
+          if(isDone){ selectedId = i; render(); window.scrollTo({top:0,behavior:'smooth'}); }
+          else { markSession(i); }
+        });
+        row.appendChild(btn);
+        list.appendChild(row);
+      }
+      block.appendChild(list);
+      wrap.appendChild(block);
+    }
+  }
+
+  function markSession(id){
+    const nowIso = new Date().toISOString();
+    state.sessions[id] = {done:true, completedAt: nowIso};
+    state.updatedAt = nowIso;
+    selectedId = null; // move to next pending after this
+    render();
+    save();
+  }
+
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(()=>t.classList.remove('show'), 2600);
+  }
+
+  function buildShareText(){
+    const stats = computeStats();
+    const level = levelFor(stats.points);
+    const lines = [
+      '🦋 Progreso de Maydelis — Camino Creativo',
+      'Sesiones: ' + stats.doneCount + '/30 · Semanas completas: ' + stats.weeksComplete + '/6',
+      'Racha actual: ' + stats.streak + ' día' + (stats.streak===1?'':'s') + ' seguidos',
+      'Puntos: ' + stats.points + ' · Nivel: ' + level
+    ];
+    return lines.join('\n');
+  }
+
+  async function shareProgress(){
+    const text = buildShareText();
+    if(navigator.share){
+      try{ await navigator.share({title:'Mi progreso — Camino Creativo', text: text}); return; }
+      catch(e){ /* cancelled or unsupported — fall through to copy */ }
+    }
+    try{
+      await navigator.clipboard.writeText(text);
+      showToast('Copiado — pégalo en WhatsApp o mensajes ✅');
+    }catch(e){
+      window.prompt('Copia este mensaje para enviárselo a William:', text);
+    }
+  }
+
+  document.getElementById('markBtn').addEventListener('click', ()=>{ markSession(selectedId); });
+  document.getElementById('pickOtherBtn').addEventListener('click', ()=>{
+    document.getElementById('weeksWrap').scrollIntoView({behavior:'smooth'});
+  });
+  document.getElementById('todayResource').addEventListener('click', (e)=>{
+    goToResource(e.currentTarget.dataset.goto);
+  });
+  document.getElementById('shareBtn').addEventListener('click', shareProgress);
+
+  load();
+  render();
+})();
+</script>
+</body>
+</html>

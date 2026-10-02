@@ -268,6 +268,7 @@
 </div>
 
 <div id="syncPill" class="sync-pill"><span class="sync-dot"></span><span id="syncText">Guardado en este teléfono</span></div>
+<button type="button" class="btn small secondary" id="syncLinkBtn" style="margin:-10px 0 14px 8px;">🔗 Enlace de sincronización</button>
 
 <div id="levelPill" class="level-pill">🦋 Explorando Canva</div>
 
@@ -296,7 +297,7 @@
 <div class="card">
   <p class="eyebrow">Compartir</p>
   <h2 style="margin-bottom:4px;">Avísale a William</h2>
-  <p class="block-text" style="margin-bottom:12px;">Este progreso se guarda solo en tu teléfono. Toca el botón para enviarle a William un resumen por WhatsApp, mensaje o correo.</p>
+  <p class="block-text" style="margin-bottom:12px;">Tu progreso ya se sincroniza solo entre los dos teléfonos enlazados (mira el punto verde arriba). Este botón es un extra: envía un resumen por WhatsApp, mensaje o correo cuando quieras avisar directamente.</p>
   <button type="button" class="btn" id="shareBtn">📤 Compartir mi progreso</button>
 </div>
 
@@ -425,6 +426,167 @@
   function save(){
     try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
     catch(e){ document.getElementById('syncText').textContent = 'No se pudo guardar en este teléfono'; }
+    syncPush();
+  }
+
+  /* ---------- shared sync (no-signup JSON store, best-effort) ---------- */
+  const SYNC_API = 'https://jsonblob.com/api/jsonBlob';
+  const ROOM_KEY = 'caminoCreativoRoom.v1';
+  let roomId = null;
+  let pollTimer = null;
+
+  function setSyncStatus(text){
+    const el = document.getElementById('syncText');
+    if(el) el.textContent = text;
+  }
+
+  function shareLinkFor(id){
+    try{
+      const u = new URL(window.location.href);
+      u.search = '';
+      u.searchParams.set('room', id);
+      return u.toString();
+    }catch(e){ return window.location.href; }
+  }
+
+  function getRoomFromUrl(){
+    try{ return new URL(window.location.href).searchParams.get('room'); }
+    catch(e){ return null; }
+  }
+
+  async function createRoom(){
+    const res = await fetch(SYNC_API, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(state)
+    });
+    const loc = res.headers.get('Location') || res.headers.get('location');
+    if(!loc) throw new Error('sin Location');
+    return loc.split('/').pop();
+  }
+
+  async function fetchRemote(id){
+    const res = await fetch(SYNC_API + '/' + id, {cache:'no-store'});
+    if(!res.ok) throw new Error('fetch ' + res.status);
+    return await res.json();
+  }
+
+  async function pushRemote(id, data){
+    const res = await fetch(SYNC_API + '/' + id, {
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(data)
+    });
+    if(!res.ok) throw new Error('push ' + res.status);
+  }
+
+  function mergeStates(local, remote){
+    if(!remote) return local;
+    if(!local) return remote;
+    const merged = {sessions:{}, rewards:{}};
+    const ids = new Set([].concat(Object.keys(local.sessions||{}), Object.keys(remote.sessions||{})));
+    ids.forEach(id=>{
+      const a = (local.sessions||{})[id];
+      const b = (remote.sessions||{})[id];
+      if(a && a.done && b && b.done){ merged.sessions[id] = (a.completedAt <= b.completedAt) ? a : b; }
+      else if(a && a.done){ merged.sessions[id] = a; }
+      else if(b && b.done){ merged.sessions[id] = b; }
+      else { merged.sessions[id] = a || b; }
+    });
+    const wks = new Set([].concat(Object.keys(local.rewards||{}), Object.keys(remote.rewards||{})));
+    wks.forEach(w=>{
+      const a = (local.rewards||{})[w] || {};
+      const b = (remote.rewards||{})[w] || {};
+      merged.rewards[w] = {
+        text: (b.text !== undefined && b.text !== '') ? b.text : a.text,
+        claimed: !!(a.claimed || b.claimed)
+      };
+    });
+    merged.updatedAt = [local.updatedAt, remote.updatedAt].filter(Boolean).sort().pop();
+    return merged;
+  }
+
+  function showSyncBanner(link){
+    if(document.getElementById('syncBanner')) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'banner';
+    wrap.id = 'syncBanner';
+    wrap.innerHTML =
+      '<strong>🦋 Enlace de sincronización creado</strong><br>' +
+      'Envíale este enlace a la otra persona (solo esta primera vez) para que los dos vean el mismo progreso:<br>' +
+      '<code style="word-break:break-all;display:block;margin:8px 0;">'+link+'</code>' +
+      '<button type="button" class="btn small" id="copyLinkBtn">📋 Copiar enlace</button> ' +
+      '<button type="button" class="btn small secondary" id="dismissBannerBtn">Listo</button>';
+    document.body.insertBefore(wrap, document.querySelector('.stats'));
+    document.getElementById('copyLinkBtn').addEventListener('click', ()=>{ copyShareLink(); });
+    document.getElementById('dismissBannerBtn').addEventListener('click', ()=>{ wrap.remove(); });
+  }
+
+  async function copyShareLink(){
+    if(!roomId){ showToast('Todavía conectando…'); return; }
+    const link = shareLinkFor(roomId);
+    try{ await navigator.clipboard.writeText(link); showToast('Enlace copiado ✅'); }
+    catch(e){ window.prompt('Copia este enlace:', link); }
+  }
+
+  async function initSync(){
+    let id = getRoomFromUrl();
+    let isNew = false;
+    if(id){
+      try{ localStorage.setItem(ROOM_KEY, id); }catch(e){}
+      try{
+        const u = new URL(window.location.href);
+        u.searchParams.delete('room');
+        history.replaceState(null, '', u.toString());
+      }catch(e){}
+    } else {
+      try{ id = localStorage.getItem(ROOM_KEY); }catch(e){}
+    }
+    if(!id){
+      setSyncStatus('Creando enlace compartido...');
+      try{
+        id = await createRoom();
+        try{ localStorage.setItem(ROOM_KEY, id); }catch(e){}
+        isNew = true;
+      }catch(e){
+        setSyncStatus('Guardado solo en este teléfono');
+        return;
+      }
+    }
+    roomId = id;
+    try{
+      const remote = await fetchRemote(roomId);
+      const merged = mergeStates(state, remote);
+      if(JSON.stringify(merged) !== JSON.stringify(state)){ state = merged; }
+      save();
+      render();
+    }catch(e){ /* keep local state if the first fetch fails */ }
+    setSyncStatus('Sincronizado');
+    if(isNew){ showSyncBanner(shareLinkFor(roomId)); }
+    pollTimer = setInterval(syncPull, 20000);
+    document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) syncPull(); });
+  }
+
+  async function syncPull(){
+    if(!roomId) return;
+    try{
+      const remote = await fetchRemote(roomId);
+      const merged = mergeStates(state, remote);
+      if(JSON.stringify(merged) !== JSON.stringify(state)){
+        state = merged;
+        try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+        render();
+      }
+      setSyncStatus('Sincronizado');
+    }catch(e){
+      setSyncStatus('Sin conexión — guardado en este teléfono');
+    }
+  }
+
+  async function syncPush(){
+    if(!roomId) return;
+    try{ await pushRemote(roomId, state); setSyncStatus('Sincronizado'); }
+    catch(e){ setSyncStatus('Sin conexión — guardado en este teléfono'); }
   }
 
   function fmtDate(iso){
@@ -716,9 +878,11 @@
     goToResource(e.currentTarget.dataset.goto);
   });
   document.getElementById('shareBtn').addEventListener('click', shareProgress);
+  document.getElementById('syncLinkBtn').addEventListener('click', copyShareLink);
 
   load();
   render();
+  initSync();
 })();
 </script>
 </body>

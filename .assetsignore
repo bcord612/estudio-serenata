@@ -1,0 +1,16 @@
+# Files under the assets directory that must NOT be served publicly.
+# assets.directory is "." (the repo root), so without this list Cloudflare
+# would publish the whole repository — source, notes and git history included.
+
+# Version control and tooling
+.git
+.github
+.gitignore
+.assetsignore
+node_modules
+wrangler.jsonc
+
+# Internal notes and backend source, not part of the website
+README.md
+orders-backend.gs
+.impeccable

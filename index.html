@@ -254,6 +254,25 @@
     z-index:10;white-space:nowrap;
   }
   .toast.show{opacity:1;transform:translate(-50%,0);}
+
+  .start-info{font-size:13px;color:var(--text-soft);margin:-6px 0 14px;}
+
+  /* ---------- quiz ---------- */
+  .quiz-card{border:1.5px solid var(--accent);background:linear-gradient(160deg,var(--surface),var(--surface-soft));}
+  .quiz-meta{font-size:12.5px;color:var(--text-faint);font-weight:700;margin:0 0 8px;font-variant-numeric:tabular-nums;}
+  .quiz-q{font-size:16.5px;font-weight:700;margin:0 0 12px;line-height:1.4;}
+  .quiz-opts{display:flex;flex-direction:column;gap:8px;}
+  .quiz-opt{
+    text-align:left;appearance:none;cursor:pointer;
+    font-family:inherit;font-size:14.5px;color:var(--text);
+    background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:11px 14px;
+  }
+  .quiz-opt:disabled{cursor:default;}
+  .quiz-opt.correct{background:var(--success-bg);border-color:var(--success);}
+  .quiz-opt.wrong{background:#FFE9EE;border-color:#E58AA3;}
+  .quiz-explain{font-size:13.5px;color:var(--text-soft);background:var(--surface-alt);border-radius:12px;padding:10px 12px;margin:12px 0 0;}
+  .quiz-score{font-family:'Baloo 2',sans-serif;font-size:34px;color:var(--accent-strong);margin:4px 0;}
+  .quiz-missed{font-size:13.5px;color:var(--text-soft);margin:8px 0 0;padding-left:18px;}
 </style>
 </head>
 <body>
@@ -271,10 +290,11 @@
 <button type="button" class="btn small secondary" id="syncLinkBtn" style="margin:-10px 0 14px 8px;">🔗 Enlace de sincronización</button>
 
 <div id="levelPill" class="level-pill">🦋 Explorando Canva</div>
+<p class="start-info" id="startInfo"></p>
 
 <div class="stats">
   <div class="stat"><div class="num" id="statPoints">0</div><div class="lbl">Puntos</div></div>
-  <div class="stat"><div class="num" id="statStreak">0</div><div class="lbl">Racha sin saltos</div></div>
+  <div class="stat"><div class="num" id="statStreak">0</div><div class="lbl">Racha (días seguidos)</div></div>
   <div class="stat"><div class="num" id="statDone">0/30</div><div class="lbl">Sesiones</div></div>
   <div class="stat"><div class="num" id="statWeeks">0/6</div><div class="lbl">Semanas completas</div></div>
 </div>
@@ -292,6 +312,12 @@
     <button class="btn secondary small" id="pickOtherBtn">Elegir otra sesión</button>
     <button type="button" class="btn secondary small" id="todayResource">🎬 Ver recurso</button>
   </div>
+</div>
+
+<div class="card quiz-card" id="quizCard">
+  <p class="eyebrow">Inicio de Semana 5</p>
+  <h2 style="margin-bottom:4px;">🧠 Quiz de lo aprendido</h2>
+  <div id="quizBody"></div>
 </div>
 
 <div class="card">
@@ -502,6 +528,14 @@
         claimed: !!(a.claimed || b.claimed)
       };
     });
+    // quiz attempts: union by timestamp so neither device loses an attempt
+    const seen = {};
+    const attempts = [];
+    [].concat((local.quiz && local.quiz.attempts) || [], (remote.quiz && remote.quiz.attempts) || []).forEach(a=>{
+      if(a && a.at && !seen[a.at]){ seen[a.at] = true; attempts.push(a); }
+    });
+    attempts.sort((x,y)=> x.at < y.at ? -1 : 1);
+    if(attempts.length) merged.quiz = {attempts: attempts};
     merged.updatedAt = [local.updatedAt, remote.updatedAt].filter(Boolean).sort().pop();
     return merged;
   }
@@ -595,21 +629,56 @@
     return d.toLocaleDateString('es-ES',{day:'numeric',month:'short'}) + ' · ' + d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
   }
 
+  function dayKey(d){
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  // Streak = consecutive CALENDAR days with at least one completed session.
+  // Catching up several sessions in one day counts as one day.
+  // If today has no session yet, the streak is still alive as long as yesterday had one.
+  function dayStats(){
+    const days = new Set();
+    let first = null;
+    for(let i=1;i<=30;i++){
+      const s = state.sessions[i];
+      if(s && s.done && s.completedAt){
+        const d = new Date(s.completedAt);
+        if(isNaN(d)) continue;
+        days.add(dayKey(d));
+        if(!first || d < first) first = d;
+      }
+    }
+    let streak = 0;
+    const cur = new Date();
+    cur.setHours(12,0,0,0);
+    if(!days.has(dayKey(cur))) cur.setDate(cur.getDate()-1);
+    while(days.has(dayKey(cur))){ streak++; cur.setDate(cur.getDate()-1); }
+    let programDay = 0;
+    if(first){
+      const a = new Date(first); a.setHours(12,0,0,0);
+      const b = new Date(); b.setHours(12,0,0,0);
+      programDay = Math.round((b - a) / 86400000) + 1;
+    }
+    return {streak, activeDays: days.size, first, programDay};
+  }
+
+  const QUIZ_PASS = 9;      // 9 de 12 (75%)
+  const QUIZ_BONUS = 20;    // puntos por aprobar
+
+  function bestQuiz(){
+    const at = (state.quiz && state.quiz.attempts) || [];
+    let best = null;
+    at.forEach(a=>{ if(!best || a.score > best.score || (a.score === best.score && a.at > best.at)) best = a; });
+    return best;
+  }
+
   function computeStats(){
     let doneCount = 0;
     let points = 0;
-    let streak = 0;
-    let streakBroken = false;
     let weeksComplete = 0;
     for(let i=1;i<=30;i++){
       const s = state.sessions[i];
-      const isDone = !!(s && s.done);
-      if(isDone){
-        doneCount++; points += 10;
-        if(!streakBroken) streak++;
-      } else {
-        streakBroken = true;
-      }
+      if(s && s.done){ doneCount++; points += 10; }
     }
     for(let w=1; w<=6; w++){
       const start = (w-1)*5+1, end = w*5;
@@ -617,7 +686,10 @@
       for(let i=start;i<=end;i++){ if(!(state.sessions[i] && state.sessions[i].done)) { all = false; break; } }
       if(all){ weeksComplete++; points += 15; }
     }
-    return {doneCount, points, streak, weeksComplete};
+    const best = bestQuiz();
+    if(best && best.score >= QUIZ_PASS) points += QUIZ_BONUS;
+    const ds = dayStats();
+    return {doneCount, points, streak: ds.streak, weeksComplete, activeDays: ds.activeDays, first: ds.first, programDay: ds.programDay};
   }
 
   function levelFor(points){
@@ -638,6 +710,14 @@
     document.getElementById('statDone').textContent = stats.doneCount + '/30';
     document.getElementById('statWeeks').textContent = stats.weeksComplete + '/6';
     document.getElementById('levelPill').textContent = levelFor(stats.points);
+    const startEl = document.getElementById('startInfo');
+    if(stats.first){
+      startEl.textContent = 'Inicio: ' + stats.first.toLocaleDateString('es-ES',{day:'numeric',month:'long'}) +
+        ' · Día ' + stats.programDay + ' del programa · ' + stats.doneCount + ' sesiones en ' + stats.activeDays +
+        ' día' + (stats.activeDays===1?'':'s') + ' activo' + (stats.activeDays===1?'':'s');
+    } else {
+      startEl.textContent = 'Todavía no se ha marcado ninguna sesión.';
+    }
 
     if(!selectedId) selectedId = nextPendingId();
     const sess = SESSIONS[selectedId-1];
@@ -676,6 +756,7 @@
       strip.appendChild(d);
     }
 
+    renderQuiz();
     renderRewards();
     renderWeeks();
     if(!resourcesRendered){ renderResources(); resourcesRendered = true; }
@@ -853,7 +934,224 @@
       'Racha actual: ' + stats.streak + ' día' + (stats.streak===1?'':'s') + ' seguidos',
       'Puntos: ' + stats.points + ' · Nivel: ' + level
     ];
+    const bq = bestQuiz();
+    if(bq) lines.push('Quiz de Semana 5: ' + bq.score + '/' + bq.total);
     return lines.join('\n');
+  }
+
+  /* ---------- Quiz de inicio de Semana 5 ---------- */
+  const QUIZ = [
+    {id:'jerarquia', topic:'Jerarquía visual (Canva)', q:'¿Qué significa jerarquía visual en un diseño?',
+     o:['Que todos los elementos tengan el mismo tamaño','Que lo más importante se vea primero, por tamaño, color o posición','Que el diseño tenga muchos colores','Que el texto siempre esté en el centro'], a:1,
+     e:'La jerarquía guía el ojo: el título grande y destacado primero, los detalles después.'},
+    {id:'fuentes', topic:'Tipografía (Canva)', q:'¿Cuántas tipografías se recomienda usar como máximo en una publicación?',
+     o:['1 por cada palabra','Entre 5 y 6','2','Todas las que se puedan'], a:2,
+     e:'Con 2 tipografías (por ejemplo una para títulos y otra para texto) el diseño se ve ordenado y profesional.'},
+    {id:'paleta', topic:'Colores de marca (Canva)', q:'Una paleta de marca sencilla usa 2 colores principales y además...',
+     o:['1 color de acento','10 colores más','Ningún color más','Solo blanco y negro'], a:0,
+     e:'El color de acento se usa poco, para resaltar botones, palabras o detalles clave.'},
+    {id:'contraste', topic:'Colores (Canva)', q:'¿Para qué sirve el contraste entre el texto y el fondo?',
+     o:['Para que el diseño pese menos','Para que el texto se lea fácilmente','Para poder usar más fuentes','Para que la imagen se vea borrosa'], a:1,
+     e:'Texto claro sobre fondo oscuro (o al revés) se lee rápido, sobre todo en un teléfono.'},
+    {id:'identidad', topic:'Identidad visual (Canva)', q:'¿Qué incluye una mini identidad visual?',
+     o:['Solo el logo','Nombre de marca, colores, tipografías y estilo de fotos y gráficos','Solo los colores','Un video de 30 segundos'], a:1,
+     e:'Es el conjunto que hace que todo lo que publicas se reconozca como de tu marca.'},
+    {id:'cta', topic:'Contenido (Canva)', q:'¿Qué significa CTA en un post o video?',
+     o:['Calidad Total Alta','Llamada a la acción: lo que quieres que la persona haga','Cuadro de Texto Animado','Contenido de Tercer Año'], a:1,
+     e:'Ejemplos de CTA: "Escríbenos por WhatsApp", "Reserva hoy", "Descubre más".'},
+    {id:'story', topic:'Stories (Canva)', q:'Una Story de 3 páginas del programa sigue este orden:',
+     o:['Solución → Problema → Llamada a la acción','Llamada a la acción → Problema → Solución','Problema → Solución → Llamada a la acción','Tres soluciones distintas'], a:2,
+     e:'Primero conectas con el problema, luego ofreces la solución y al final dices qué hacer.'},
+    {id:'dividir', topic:'Edición básica (CapCut)', q:'En CapCut, ¿qué herramienta usas para partir un clip en dos?',
+     o:['Exportar','Dividir','Fade','Keyframe'], a:1,
+     e:'Dividir (split) corta el clip en la posición del cursor del timeline; después puedes eliminar la parte que sobra.'},
+    {id:'editar', topic:'Edición básica (CapCut)', q:'"Editar también significa eliminar". ¿Qué se debe eliminar?',
+     o:['Todo el video','Los silencios, errores y partes que no aportan','El audio','Solo el principio'], a:1,
+     e:'Quitar lo que sobra da ritmo y mantiene la atención.'},
+    {id:'musica', topic:'Música y audio (CapCut)', q:'Cuando hay una voz hablando, la música de fondo debe...',
+     o:['Sonar más fuerte que la voz','Acompañar la voz sin competir con ella','Cambiar cada 2 segundos','Quitarse siempre'], a:1,
+     e:'Baja el volumen de la música para que la voz se entienda bien.'},
+    {id:'transiciones', topic:'Transiciones (CapCut)', q:'¿Cuál es la regla para usar transiciones?',
+     o:['Una transición distinta en cada corte','Usarlas simples y consistentes, no una diferente entre cada clip','Nunca cortar el video','Usar la más llamativa siempre'], a:1,
+     e:'Una edición profesional suele verse mucho más sencilla de lo que parece.'},
+    {id:'hook', topic:'Hooks y guiones', q:'¿Dónde se juega el "hook" de un video corto?',
+     o:['En los últimos segundos','En los primeros 3 segundos','Solo en la descripción','No importa cuándo'], a:1,
+     e:'Si no captas la atención al inicio, la persona sigue deslizando. Estructura: 0–3 s Hook, 3–10 s Problema, 10–20 s Producto, 20–30 s CTA.'}
+  ];
+
+  let quizRun = null;   // {order:[idx], i:0, answers:[{idx,pick,ok}], picked:null}
+
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i=a.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); const t=a[i]; a[i]=a[j]; a[j]=t; }
+    return a;
+  }
+
+  function startQuiz(){
+    quizRun = {
+      order: shuffle(QUIZ.map((_,i)=>i)),
+      opts: {},
+      i: 0,
+      answers: [],
+      picked: null,
+      finished: false,
+      saved: false
+    };
+    QUIZ.forEach((q,i)=>{ quizRun.opts[i] = shuffle(q.o.map((_,k)=>k)); });
+    renderQuiz();
+  }
+
+  function pickAnswer(pos){
+    if(!quizRun || quizRun.picked !== null) return;
+    const qi = quizRun.order[quizRun.i];
+    const q = QUIZ[qi];
+    const origIdx = quizRun.opts[qi][pos];
+    quizRun.picked = pos;
+    quizRun.answers.push({id:q.id, ok: origIdx === q.a});
+    renderQuiz();
+  }
+
+  function nextQuestion(){
+    if(!quizRun || quizRun.picked === null) return;
+    if(quizRun.i + 1 >= QUIZ.length){
+      quizRun.finished = true;
+      if(!quizRun.saved){
+        quizRun.saved = true;
+        const score = quizRun.answers.filter(a=>a.ok).length;
+        const nowIso = new Date().toISOString();
+        const attempt = {at: nowIso, score: score, total: QUIZ.length, missed: quizRun.answers.filter(a=>!a.ok).map(a=>a.id)};
+        state.quiz = state.quiz || {attempts: []};
+        state.quiz.attempts = (state.quiz.attempts || []).concat([attempt]);
+        state.updatedAt = nowIso;
+        save();
+      }
+    } else {
+      quizRun.i++;
+      quizRun.picked = null;
+    }
+    render();
+  }
+
+  function renderQuiz(){
+    const body = document.getElementById('quizBody');
+    if(!body) return;
+    body.innerHTML = '';
+    const done20 = (function(){ let n=0; for(let i=1;i<=20;i++){ if(state.sessions[i] && state.sessions[i].done) n++; } return n; })();
+    const intro = document.createElement('p');
+    intro.className = 'block-text';
+    intro.style.marginBottom = '12px';
+
+    function btn(label, cls, fn){
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'btn' + (cls ? ' ' + cls : '');
+      b.textContent = label;
+      b.addEventListener('click', fn);
+      return b;
+    }
+
+    // Quiz in progress
+    if(quizRun && !quizRun.finished){
+      const qi = quizRun.order[quizRun.i];
+      const q = QUIZ[qi];
+      const meta = document.createElement('p');
+      meta.className = 'quiz-meta';
+      meta.textContent = 'Pregunta ' + (quizRun.i+1) + ' de ' + QUIZ.length + ' · ' + q.topic;
+      body.appendChild(meta);
+      const qEl = document.createElement('p');
+      qEl.className = 'quiz-q';
+      qEl.textContent = q.q;
+      body.appendChild(qEl);
+      const wrap = document.createElement('div');
+      wrap.className = 'quiz-opts';
+      quizRun.opts[qi].forEach((origIdx, pos)=>{
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'quiz-opt';
+        b.textContent = q.o[origIdx];
+        if(quizRun.picked !== null){
+          b.disabled = true;
+          if(origIdx === q.a) b.classList.add('correct');
+          else if(pos === quizRun.picked) b.classList.add('wrong');
+        } else {
+          b.addEventListener('click', ()=>pickAnswer(pos));
+        }
+        wrap.appendChild(b);
+      });
+      body.appendChild(wrap);
+      if(quizRun.picked !== null){
+        const ok = quizRun.answers[quizRun.answers.length-1].ok;
+        const ex = document.createElement('p');
+        ex.className = 'quiz-explain';
+        ex.textContent = (ok ? '¡Correcto! ' : 'Casi. ') + q.e;
+        body.appendChild(ex);
+        const row = document.createElement('div');
+        row.className = 'actions-row';
+        row.appendChild(btn(quizRun.i + 1 >= QUIZ.length ? 'Ver mi resultado' : 'Siguiente', '', nextQuestion));
+        body.appendChild(row);
+      }
+      return;
+    }
+
+    // Just finished a run
+    if(quizRun && quizRun.finished){
+      const score = quizRun.answers.filter(a=>a.ok).length;
+      const passed = score >= QUIZ_PASS;
+      const sc = document.createElement('div');
+      sc.className = 'quiz-score';
+      sc.textContent = score + ' / ' + QUIZ.length;
+      body.appendChild(sc);
+      const msg = document.createElement('p');
+      msg.className = 'block-text';
+      msg.textContent = passed
+        ? '¡Aprobaste! 🎉 Sumaste ' + QUIZ_BONUS + ' puntos. Ya dominas las bases de Canva y CapCut.'
+        : 'Te faltaron ' + (QUIZ_PASS - score) + ' para aprobar (necesitas ' + QUIZ_PASS + '). Repasa los temas de abajo y vuelve a intentarlo, sin presión.';
+      body.appendChild(msg);
+      const missed = quizRun.answers.filter(a=>!a.ok).map(a=>QUIZ.find(q=>q.id===a.id));
+      if(missed.length){
+        const ul = document.createElement('ul');
+        ul.className = 'quiz-missed';
+        missed.forEach(q=>{ const li = document.createElement('li'); li.textContent = 'Repasar: ' + q.topic; ul.appendChild(li); });
+        body.appendChild(ul);
+      }
+      const row = document.createElement('div');
+      row.className = 'actions-row';
+      row.appendChild(btn('Repetir el quiz', 'secondary', startQuiz));
+      row.appendChild(btn('Cerrar', 'secondary small', ()=>{ quizRun = null; render(); }));
+      body.appendChild(row);
+      return;
+    }
+
+    // Idle: locked / ready / has history
+    const best = bestQuiz();
+    if(done20 < 20 && !best){
+      intro.textContent = 'Se desbloquea al completar las 20 sesiones de las Semanas 1 a 4 (' + done20 + '/20). Son 12 preguntas para ver cuánto has aprendido de Canva y CapCut.';
+      body.appendChild(intro);
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      bar.innerHTML = '<span style="width:' + Math.round(done20/20*100) + '%"></span>';
+      body.appendChild(bar);
+      return;
+    }
+    if(best){
+      intro.textContent = 'Mejor resultado: ' + best.score + ' de ' + best.total + ' (' + fmtDate(best.at) + ')' +
+        (best.score >= QUIZ_PASS ? ' · Aprobado ✓' : ' · Aún no aprueba') +
+        ' · Intentos: ' + state.quiz.attempts.length + '.';
+      body.appendChild(intro);
+      if(best.score < QUIZ_PASS && best.missed && best.missed.length){
+        const ul = document.createElement('ul');
+        ul.className = 'quiz-missed';
+        best.missed.forEach(id=>{ const q = QUIZ.find(x=>x.id===id); if(q){ const li = document.createElement('li'); li.textContent = 'Repasar: ' + q.topic; ul.appendChild(li); } });
+        body.appendChild(ul);
+      }
+    } else {
+      intro.textContent = '12 preguntas sobre lo que ya practicaste en Canva y CapCut. Necesitas ' + QUIZ_PASS + ' para aprobar y ganas ' + QUIZ_BONUS + ' puntos. Puedes repetirlo las veces que quieras.';
+      body.appendChild(intro);
+    }
+    const row = document.createElement('div');
+    row.className = 'actions-row';
+    row.appendChild(btn(best ? 'Repetir el quiz' : 'Empezar el quiz', '', startQuiz));
+    body.appendChild(row);
   }
 
   async function shareProgress(){

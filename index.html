@@ -1204,7 +1204,8 @@
       {id:'v_cta',      t:'Termina con una llamada a la acción'}
     ]},
     {title:'📁 Entrega', items:[
-      {id:'e_portafolio', t:'Guardé las dos piezas en la carpeta PORTAFOLIO'}
+      {id:'e_portafolio', t:'Guardé las dos piezas en la carpeta PORTAFOLIO'},
+      {id:'e_correo',     t:'Se lo envié a William por correo (con los enlaces o los archivos)'}
     ]}
   ];
   const CHALLENGE_TOTAL = CHALLENGE.reduce((n,g)=>n+g.items.length, 0);
@@ -1229,6 +1230,37 @@
     save();
   }
 
+  // The address is assembled at runtime so it is not sitting as plain text in the page source.
+  function williamAddress(){ return ['billycordero', 'gmail.com'].join('@'); }
+
+  function buildChallengeMailto(){
+    const c = state.challenge || {};
+    const note = (c.note || '').trim();
+    const lines = [
+      'Hola William,',
+      '',
+      'Aquí está mi reto práctico de la Semana 5 (Estudio Serenata).',
+      '',
+      '🎨 Mi publicación de Canva (enlace o archivo adjunto):',
+      '',
+      '🎬 Mi video de CapCut (enlace o archivo adjunto):',
+      ''
+    ];
+    if(note){ lines.push('Mi nota: ' + note, ''); }
+    lines.push('Pasos completados: ' + challengeChecked() + ' de ' + CHALLENGE_TOTAL, '', 'Maydelis');
+    return 'mailto:' + williamAddress() +
+      '?subject=' + encodeURIComponent('Reto práctico Semana 5 — Camino Creativo') +
+      '&body=' + encodeURIComponent(lines.join('\n'));
+  }
+
+  function sendChallengeMail(){
+    const a = document.createElement('a');
+    a.href = buildChallengeMailto();
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
   function renderChallenge(){
     const body = document.getElementById('challengeBody');
     if(!body) return;
@@ -1250,7 +1282,7 @@
     }
 
     intro.innerHTML = 'Ahora a crear, <strong>sin ver tutoriales</strong>: solo con lo que ya aprendiste. ' +
-      'Hazlo en una sola sesión de unos 60 minutos. Que quede bien, no perfecto. Marca cada paso cuando lo cumplas.';
+      'Hazlo en una sola sesión de unos 60 minutos. Que quede bien, no perfecto. Marca cada paso cuando lo cumplas y al final envíaselo a William por correo con el botón de abajo.';
     body.appendChild(intro);
 
     CHALLENGE.forEach(g=>{
@@ -1294,6 +1326,22 @@
       if((state.challenge && state.challenge.note || '') !== ta.value){ saveChallenge(cc=>{ cc.note = ta.value; }); }
     });
     body.appendChild(ta);
+
+    const mailRow = document.createElement('div');
+    mailRow.className = 'actions-row';
+    const mailBtn = document.createElement('button');
+    mailBtn.type = 'button';
+    mailBtn.className = 'btn';
+    mailBtn.id = 'challengeMailBtn';
+    mailBtn.textContent = '✉️ Enviar a William por correo';
+    mailBtn.addEventListener('click', sendChallengeMail);
+    mailRow.appendChild(mailBtn);
+    body.appendChild(mailRow);
+    const mailHint = document.createElement('p');
+    mailHint.className = 'block-text';
+    mailHint.style.cssText = 'font-size:12.5px;margin-top:6px;';
+    mailHint.textContent = 'Se abre tu correo con el mensaje listo. Pega los enlaces de Canva y del video, o adjunta los archivos (si el video es muy pesado, súbelo a Drive y comparte el enlace).';
+    body.appendChild(mailHint);
 
     const n = challengeChecked();
     const status = document.createElement('div');

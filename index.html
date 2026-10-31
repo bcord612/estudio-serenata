@@ -273,6 +273,22 @@
   .quiz-explain{font-size:13.5px;color:var(--text-soft);background:var(--surface-alt);border-radius:12px;padding:10px 12px;margin:12px 0 0;}
   .quiz-score{font-family:'Baloo 2',sans-serif;font-size:34px;color:var(--accent-strong);margin:4px 0;}
   .quiz-missed{font-size:13.5px;color:var(--text-soft);margin:8px 0 0;padding-left:18px;}
+
+  /* ---------- hands-on challenge ---------- */
+  .ch-group{font-size:12px;text-transform:uppercase;letter-spacing:.8px;font-weight:700;color:var(--accent-strong);margin:14px 0 6px;}
+  .ch-item{
+    display:flex;align-items:flex-start;gap:10px;cursor:pointer;
+    border:1.5px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px;
+    background:var(--surface);font-size:14.5px;line-height:1.4;
+  }
+  .ch-item.on{background:var(--success-bg);border-color:var(--success);}
+  .ch-item input{width:20px;height:20px;margin:1px 0 0;flex:none;accent-color:var(--success);}
+  .ch-note{
+    width:100%;border:1px solid var(--border);border-radius:10px;padding:8px 10px;
+    font-family:inherit;font-size:14px;color:var(--text);background:var(--surface);
+    resize:vertical;min-height:64px;margin-top:6px;
+  }
+  .ch-done{background:var(--success-bg);border:1px solid #cdeadd;color:var(--success);font-weight:700;border-radius:12px;padding:10px 14px;margin:12px 0 0;font-size:14px;}
 </style>
 </head>
 <body>
@@ -318,6 +334,12 @@
   <p class="eyebrow">Inicio de Semana 5</p>
   <h2 style="margin-bottom:4px;">🧠 Quiz de lo aprendido</h2>
   <div id="quizBody"></div>
+</div>
+
+<div class="card quiz-card" id="challengeCard">
+  <p class="eyebrow">Inicio de Semana 5</p>
+  <h2 style="margin-bottom:4px;">🛠️ Reto práctico</h2>
+  <div id="challengeBody"></div>
 </div>
 
 <div class="card">
@@ -536,6 +558,10 @@
     });
     attempts.sort((x,y)=> x.at < y.at ? -1 : 1);
     if(attempts.length) merged.quiz = {attempts: attempts};
+    // challenge: the most recently edited copy wins (so un-checking a box also syncs)
+    const ca = local.challenge, cb = remote.challenge;
+    if(ca && cb){ merged.challenge = ((ca.updatedAt || '') >= (cb.updatedAt || '')) ? ca : cb; }
+    else if(ca || cb){ merged.challenge = ca || cb; }
     merged.updatedAt = [local.updatedAt, remote.updatedAt].filter(Boolean).sort().pop();
     return merged;
   }
@@ -662,6 +688,7 @@
     return {streak, activeDays: days.size, first, programDay};
   }
 
+  const CHALLENGE_BONUS = 30;   // puntos por completar el reto práctico
   const QUIZ_PASS = 9;      // 9 de 12 (75%)
   const QUIZ_BONUS = 20;    // puntos por aprobar
 
@@ -688,6 +715,7 @@
     }
     const best = bestQuiz();
     if(best && best.score >= QUIZ_PASS) points += QUIZ_BONUS;
+    if(state.challenge && state.challenge.doneAt) points += CHALLENGE_BONUS;
     const ds = dayStats();
     return {doneCount, points, streak: ds.streak, weeksComplete, activeDays: ds.activeDays, first: ds.first, programDay: ds.programDay};
   }
@@ -757,6 +785,7 @@
     }
 
     renderQuiz();
+    renderChallenge();
     renderRewards();
     renderWeeks();
     if(!resourcesRendered){ renderResources(); resourcesRendered = true; }
@@ -936,6 +965,10 @@
     ];
     const bq = bestQuiz();
     if(bq) lines.push('Quiz de Semana 5: ' + bq.score + '/' + bq.total);
+    if(state.challenge){
+      const n = CHALLENGE.reduce((acc,g)=>acc + g.items.filter(it=>state.challenge.checks && state.challenge.checks[it.id]).length, 0);
+      lines.push('Reto práctico: ' + (state.challenge.doneAt ? 'completado ✓' : n + '/' + CHALLENGE_TOTAL + ' pasos'));
+    }
     return lines.join('\n');
   }
 
@@ -1152,6 +1185,127 @@
     row.className = 'actions-row';
     row.appendChild(btn(best ? 'Repetir el quiz' : 'Empezar el quiz', '', startQuiz));
     body.appendChild(row);
+  }
+
+  /* ---------- Reto práctico de inicio de Semana 5 ---------- */
+  const CHALLENGE = [
+    {title:'🎨 Canva · 1 publicación para Estudio Serenata', items:[
+      {id:'c_fuentes',  t:'Usé solo 2 tipografías'},
+      {id:'c_paleta',   t:'Usé 2 colores principales + 1 de acento'},
+      {id:'c_jerarq',   t:'El título se ve primero (jerarquía clara)'},
+      {id:'c_contraste',t:'Se lee bien en el teléfono (buen contraste)'},
+      {id:'c_cta',      t:'Incluye una llamada a la acción y el nombre de marca'}
+    ]},
+    {title:'🎬 CapCut · 1 video de 15 a 20 segundos', items:[
+      {id:'v_hook',     t:'Tiene un hook en los primeros 3 segundos'},
+      {id:'v_cortes',   t:'Cortes limpios: sin silencios ni errores'},
+      {id:'v_texto',    t:'Tiene texto o subtítulos en pantalla'},
+      {id:'v_musica',   t:'La música acompaña la voz, no la tapa'},
+      {id:'v_cta',      t:'Termina con una llamada a la acción'}
+    ]},
+    {title:'📁 Entrega', items:[
+      {id:'e_portafolio', t:'Guardé las dos piezas en la carpeta PORTAFOLIO'}
+    ]}
+  ];
+  const CHALLENGE_TOTAL = CHALLENGE.reduce((n,g)=>n+g.items.length, 0);
+  let challengeSaveTimer = null;
+
+  function challengeChecked(){
+    const c = state.challenge || {};
+    return CHALLENGE.reduce((n,g)=>n + g.items.filter(it=>c.checks && c.checks[it.id]).length, 0);
+  }
+
+  function saveChallenge(mutator){
+    const c = state.challenge || {checks:{}, note:''};
+    c.checks = c.checks || {};
+    mutator(c);
+    const nowIso = new Date().toISOString();
+    c.updatedAt = nowIso;
+    state.challenge = c;
+    const all = challengeChecked() === CHALLENGE_TOTAL;
+    if(all && !c.doneAt) c.doneAt = nowIso;
+    if(!all) c.doneAt = null;
+    state.updatedAt = nowIso;
+    save();
+  }
+
+  function renderChallenge(){
+    const body = document.getElementById('challengeBody');
+    if(!body) return;
+    // don't rebuild while she is typing a note
+    if(document.activeElement && document.activeElement.id === 'challengeNote') return;
+    body.innerHTML = '';
+    let done20 = 0;
+    for(let i=1;i<=20;i++){ if(state.sessions[i] && state.sessions[i].done) done20++; }
+    const c = state.challenge || {checks:{}, note:''};
+    const started = challengeChecked() > 0 || !!c.doneAt;
+
+    const intro = document.createElement('p');
+    intro.className = 'block-text';
+
+    if(done20 < 20 && !started){
+      intro.textContent = 'Se desbloquea junto con el quiz, al completar las 20 sesiones de las Semanas 1 a 4 (' + done20 + '/20).';
+      body.appendChild(intro);
+      return;
+    }
+
+    intro.innerHTML = 'Ahora a crear, <strong>sin ver tutoriales</strong>: solo con lo que ya aprendiste. ' +
+      'Hazlo en una sola sesión de unos 60 minutos. Que quede bien, no perfecto. Marca cada paso cuando lo cumplas.';
+    body.appendChild(intro);
+
+    CHALLENGE.forEach(g=>{
+      const h = document.createElement('div');
+      h.className = 'ch-group';
+      h.textContent = g.title;
+      body.appendChild(h);
+      g.items.forEach(it=>{
+        const on = !!(c.checks && c.checks[it.id]);
+        const lab = document.createElement('label');
+        lab.className = 'ch-item' + (on ? ' on' : '');
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = on;
+        cb.addEventListener('change', ()=>{
+          saveChallenge(cc=>{ cc.checks[it.id] = cb.checked; });
+          render();
+        });
+        const span = document.createElement('span');
+        span.textContent = it.t;
+        lab.appendChild(cb); lab.appendChild(span);
+        body.appendChild(lab);
+      });
+    });
+
+    const noteLbl = document.createElement('div');
+    noteLbl.className = 'ch-group';
+    noteLbl.textContent = '📝 Nota (opcional)';
+    body.appendChild(noteLbl);
+    const ta = document.createElement('textarea');
+    ta.id = 'challengeNote';
+    ta.className = 'ch-note';
+    ta.placeholder = 'Pega el enlace de Canva o Drive, o cuenta qué fue lo más difícil...';
+    ta.value = c.note || '';
+    ta.addEventListener('input', ()=>{
+      clearTimeout(challengeSaveTimer);
+      challengeSaveTimer = setTimeout(()=>{ saveChallenge(cc=>{ cc.note = ta.value; }); }, 700);
+    });
+    ta.addEventListener('blur', ()=>{
+      clearTimeout(challengeSaveTimer);
+      if((state.challenge && state.challenge.note || '') !== ta.value){ saveChallenge(cc=>{ cc.note = ta.value; }); }
+    });
+    body.appendChild(ta);
+
+    const n = challengeChecked();
+    const status = document.createElement('div');
+    if(c.doneAt){
+      status.className = 'ch-done';
+      status.textContent = '🎉 ¡Reto completado! Sumaste ' + CHALLENGE_BONUS + ' puntos · ' + fmtDate(c.doneAt);
+    } else {
+      status.className = 'quiz-meta';
+      status.style.marginTop = '12px';
+      status.textContent = n + ' de ' + CHALLENGE_TOTAL + ' pasos · completa todos para ganar ' + CHALLENGE_BONUS + ' puntos';
+    }
+    body.appendChild(status);
   }
 
   async function shareProgress(){

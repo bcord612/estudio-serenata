@@ -795,10 +795,11 @@ let urgentConfirmArmed = false; // doble confirmación cuando la fiesta es esta 
 
 /* ── Pago: enlaces de Stripe + captura del pedido ──
    ORDER_ENDPOINT: URL /exec del Web App de Google Apps Script (ver orders-backend.gs).
-   ⚠ PENDIENTE DE DESPLEGAR: mientras esté vacío, el flujo exige enviar el resumen
-   por WhatsApp antes del pago, para que el encargo nunca se pierda. */
-const ORDER_ENDPOINT = ""; // ← pegar la URL /exec del Web App al desplegarlo
-const PREFILL_PROMO = "ESTRENO15"; // se autocompleta en el checkout; "" para desactivar
+   Desplegado el 2026-11-06 en william@songstorylab.com → hoja "Pedidos Estudio Serenata".
+   Si queda vacío o el backend falla, el flujo exige enviar el resumen por WhatsApp
+   antes del pago, para que el encargo nunca se pierda. */
+const ORDER_ENDPOINT = "https://script.google.com/macros/s/AKfycbwnK4zosvoy-cn29qgGeN00oX4u8vwKQb1kxZHui_8Vale9tHceCHjaJhWwF6l9_NpW/exec";
+const PREFILL_PROMO = "ESTRENO20"; // se autocompleta en el checkout; "" = ninguno. ESTRENO20 (20%) vence el 4-feb-2027 23:59 ET — al vencer, quitar el banner de index.html
 
 /* Paquetes: estructura estable (nombre/precio/pago/urgente). Las etiquetas y el
    contenido traducibles viven en FLOW_TXT y se leen por índice. */
@@ -1099,19 +1100,26 @@ function goToStripe(pkg, orderId) {
   window.location.href = url.toString();
 }
 
-/* Registro del encargo. Devuelve true solo si el POST salió sin error de red.
-   (Apps Script + no-cors: la respuesta es opaca; un rechazo o timeout = fallo.) */
+/* Registro del encargo. Devuelve true SOLO si el backend confirma {ok:true},
+   es decir, si la fila quedó guardada de verdad en la hoja.
+   text/plain evita el preflight CORS, y Apps Script responde con CORS abierto,
+   así que sí podemos leer la respuesta. Antes se usaba no-cors (respuesta opaca):
+   si la hoja fallaba, el sitio creía que todo iba bien y saltaba el respaldo.
+   Ahora cualquier fallo (red, timeout, hoja caída, respuesta ilegible) → false
+   → respaldo obligatorio por WhatsApp antes del pago. */
 async function registerOrder(payload) {
   if (!ORDER_ENDPOINT) return false;
   try {
     const result = await Promise.race([
-      /* text/plain evita el preflight CORS que Apps Script no responde */
       fetch(ORDER_ENDPOINT, {
-        method: "POST", mode: "no-cors", keepalive: true,
+        method: "POST",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify(payload)
-      }).then(() => "ok"),
-      new Promise(res => setTimeout(() => res("timeout"), 6000))
+      })
+        .then(r => r.json())
+        .then(j => (j && j.ok === true ? "ok" : "rechazado")),
+      /* Apps Script puede tardar unos segundos en "despertar" */
+      new Promise(res => setTimeout(() => res("timeout"), 8000))
     ]);
     return result === "ok";
   } catch (_) { return false; }

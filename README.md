@@ -86,13 +86,24 @@ powershell -ExecutionPolicy Bypass -File serve.ps1
       El paso 4 redirige a Stripe con `client_reference_id` = Order ID,
       `locale=es` y ESTRENO15 pre-aplicado; WhatsApp quedó como opción
       secundaria "¿Prefieres hablar primero?".
-- [ ] Desplegar `orders-backend.gs` (Apps Script → Google Sheet) y pegar la
-      URL /exec en `ORDER_ENDPOINT` (cinematic.js) — mientras esté vacío,
-      el flujo exige enviar el resumen por WhatsApp antes del pago para
-      que el encargo nunca se pierda (jul 23 2026)
-- [ ] Cambiar el nombre público de la cuenta Stripe a "Estudio Serenata"
-      (hoy el checkout muestra "William Cordero"): Dashboard → Settings →
-      Business details → Public business name (y statement descriptor)
+- [x] Desplegar `orders-backend.gs` — nov 2026: Apps Script vinculado a la hoja
+      "Pedidos Estudio Serenata" (cuenta william@songstorylab.com), avisos por
+      correo a william@songstorylab.com. El sitio ahora LEE la respuesta
+      `{ok:true}` (antes no-cors): si la hoja falla, se activa el respaldo por
+      WhatsApp. Valida el Order ID, neutraliza fórmulas, guarda el idioma.
+      Compra real de prueba ($39 Verso, ES-MW9DAJWU-KF1W) verificada de punta a punta.
+- [x] Nombre público de Stripe = "Estudio Serenata" (verificado en el checkout).
+- [x] Descuento de lanzamiento renovado: ESTRENO15 venció el 15 ago sin que el
+      banner se actualizara. Ahora ESTRENO20 (20%, cupón "Lanzamiento 20%"),
+      vence el 4 feb 2027 23:59 ET; banner y `PREFILL_PROMO` apuntan a él.
+      **Al vencer: quitar el banner de index.html y vaciar PREFILL_PROMO.**
+- [ ] Página de gracias: hoy, al pagar, el cliente queda en la pantalla genérica
+      de Stripe (success_url = stripe.com), sin decirle cuándo llega su canción.
+      Configurar un mensaje propio o redirigir de vuelta al sitio en cada
+      Payment Link (Dashboard → Payment Links → After payment).
+- [ ] La hoja registra pedidos ANTES del pago: quien abandona el checkout también
+      deja fila. Falta marcar PAGADO automáticamente (webhook de Stripe
+      checkout.session.completed → buscar el Order ID en la hoja).
 - [x] Poner el número real de WhatsApp en los enlaces `wa.me` — jul 23 2026:
       407.205.7707 (provisional, centralizado en `WA_NUMBER` de cinematic.js;
       los tres enlaces estáticos de index.html también apuntan ahí)

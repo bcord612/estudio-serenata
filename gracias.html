@@ -118,7 +118,8 @@
     const WA_NUMBER = "14072057707"; // mismo número que WA_NUMBER en cinematic.js
 
     /* Textos. Registro "usted", como el resto del flujo transaccional del sitio.
-       Lo prometido aquí sigue el SOP de MARKETING-PLAN.md §9: preguntas en 24 h,
+       Lo prometido aquí: confirmación por WhatsApp en 48 h (el formulario ya pide
+       todos los detalles de la canción, así que no hay preguntas de seguimiento),
        producción 7–10 días (Gran Gala 72 h), entrega por correo. */
     const T = {
       es: {
@@ -130,8 +131,8 @@
         orderLabel: "Su número de pedido",
         orderHint: "Guárdelo: con él encontramos su historia en segundos.",
         nextTitle: "Lo que sigue",
-        s1h: "En las próximas 24 horas",
-        s1p: "Le escribimos al correo que usó al pagar con 2–3 preguntas para conocer mejor su historia: anécdotas, frases de la familia, nombres que deben sonar. Revise también la carpeta de spam.",
+        s1h: "En las próximas 48 horas",
+        s1p: "Le confirmamos por WhatsApp que su canción ya está en producción. Con todo lo que nos contó, ya tenemos lo necesario para escribirla.",
         s2h: "Componemos y grabamos",
         s2p: { gala: "Su canción se escribe y se produce con prioridad: entrega en 72 horas.",
                std: "Su canción se escribe y se produce en estudio: entrega en 7–10 días.",
@@ -140,10 +141,11 @@
         s3p: { verso: "Recibe su canción en MP3, lista para regalar.",
                serenata: "Recibe su canción en MP3 y WAV (calidad de estudio), lista para regalar.",
                gala: "Recibe su canción en MP3 y WAV, más la letra lista para enmarcar.",
-               any: "Recibe su canción lista para regalar, en el correo que usó al pagar." },
-        waText: "¿Prefiere recibir avances de su canción por WhatsApp? Escríbanos y le avisamos por ahí.",
-        waBtn: "Sí, avísenme por WhatsApp",
-        waMsg: (id) => "Hola, acabo de pagar mi canción en Estudio Serenata" + (id ? " (pedido " + id + ")" : "") + ". Quiero recibir avances por WhatsApp. 🎶",
+               any: "Recibe su canción lista para regalar, en su correo." },
+        s3to: "Se la enviamos a ",
+        waText: "Guarde nuestro número para reconocernos: por WhatsApp le avisamos cuando su canción entre a producción y cuando esté lista.",
+        waBtn: "Guardar nuestro WhatsApp",
+        waMsg: (id) => "Hola, acabo de pagar mi canción en Estudio Serenata" + (id ? " (pedido " + id + ")" : "") + ". ¡Guardo su número! 🎶",
         home: "Volver a Estudio Serenata",
         toggle: "EN", toggleAria: "Switch to English", docTitle: "Gracias — Estudio Serenata"
       },
@@ -156,8 +158,8 @@
         orderLabel: "Your order number",
         orderHint: "Keep it handy — it lets us find your story in seconds.",
         nextTitle: "What happens next",
-        s1h: "Within the next 24 hours",
-        s1p: "We'll email you at the address you used to pay, with 2–3 questions to get to know your story better: memories, family sayings, names that should be in the song. Please check your spam folder too.",
+        s1h: "Within the next 48 hours",
+        s1p: "We'll confirm on WhatsApp that your song is in production. With everything you told us, we have what we need to write it.",
         s2h: "We write and record",
         s2p: { gala: "Your song is written and produced with priority: delivered in 72 hours.",
                std: "Your song is written and produced in the studio: delivered in 7–10 days.",
@@ -166,10 +168,11 @@
         s3p: { verso: "You'll receive your song as an MP3, ready to give.",
                serenata: "You'll receive your song as MP3 and WAV (studio quality), ready to give.",
                gala: "You'll receive your song as MP3 and WAV, plus the lyrics ready to frame.",
-               any: "You'll receive your song, ready to give, at the email you used to pay." },
-        waText: "Would you rather get updates on your song by WhatsApp? Message us and we'll keep you posted there.",
-        waBtn: "Yes, update me on WhatsApp",
-        waMsg: (id) => "Hi, I just paid for my song at Estudio Serenata" + (id ? " (order " + id + ")" : "") + ". I'd like updates on WhatsApp. 🎶",
+               any: "You'll receive your song, ready to give, by email." },
+        s3to: "We'll send it to ",
+        waText: "Save our number so you recognize us: we'll message you on WhatsApp when your song goes into production and when it's ready.",
+        waBtn: "Save our WhatsApp",
+        waMsg: (id) => "Hi, I just paid for my song at Estudio Serenata" + (id ? " (order " + id + ")" : "") + ". Saving your number! 🎶",
         home: "Back to Estudio Serenata",
         toggle: "ES", toggleAria: "Cambiar a español", docTitle: "Thank you — Estudio Serenata"
       }
@@ -217,7 +220,15 @@
       document.getElementById("g-order").hidden = !id;
       document.getElementById("g-order-id").textContent = id;
       document.getElementById("g-s2p").textContent = pkg ? (pkg === "gala" ? t.s2p.gala : t.s2p.std) : t.s2p.any;
-      document.getElementById("g-s3p").textContent = t.s3p[pkg] || t.s3p.any;
+      const s3 = document.getElementById("g-s3p");
+      s3.textContent = (t.s3p[pkg] || t.s3p.any) + " ";
+      /* el correo al que se entrega: última oportunidad de notar un error de tipeo */
+      const email = order && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(order.email || "") ? String(order.email).slice(0, 120) : "";
+      if (email) {
+        const em = document.createElement("strong");
+        em.textContent = email;
+        s3.append(t.s3to, em, ".");
+      }
       document.getElementById("g-wa").href = "https://wa.me/" + WA_NUMBER + "?text=" + encodeURIComponent(t.waMsg(id));
 
       const btn = document.getElementById("g-lang");

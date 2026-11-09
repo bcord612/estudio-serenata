@@ -789,7 +789,10 @@ const flowProgress = document.getElementById("flow-progress");
 const flowBack = document.getElementById("flow-back");
 const flowNext = document.getElementById("flow-next");
 
-const flowState = { occasionIdx: null, relationIdx: null, name: "", genreIdx: null, genreCustom: "", dateIdx: null, pkg: "Serenata · $89 USD", story: "" };
+const flowState = { occasionIdx: null, relationIdx: null, name: "", genreIdx: null, genreCustom: "", dateIdx: null, pkg: "Serenata · $89 USD", story: "", email: "", phone: "",
+  nick: "", from: "", moodIdx: null, voiceIdx: null, songLangIdx: null,
+  memory: "", special: "", phrases: "", names: "", avoid: "" };
+let skipConfirmArmed = false; // aviso suave cuando se dejan en blanco detalles sugeridos
 let flowStep = 0;
 let urgentConfirmArmed = false; // doble confirmación cuando la fiesta es esta semana con entrega estándar
 
@@ -822,15 +825,41 @@ const FLOW_TXT = {
       { key: "genre", kicker: "Paso 3 · El sabor", title: "¿Qué género le encanta?", auto: true, custom: true,
         customPh: "Escríbalo aquí — componemos cualquier estilo",
         options: ["Vals", "Balada", "Cumbia", "Bachata", "Corrido", "Banda", "Mariachi", "Bolero", "Salsa", "Reggaetón", "Norteño", "Pop", "Otro"] },
-      { key: "date", kicker: "Paso 4 · La fecha", title: "¿Cuándo es la fiesta?", auto: true,
+      { key: "sound", kicker: "Paso 4 · El sonido", title: "¿Cómo debe sentirse la canción?" },
+      { key: "date", kicker: "Paso 5 · La fecha", title: "¿Cuándo es la fiesta?", auto: true,
         options: ["Esta semana", "Este mes", "Tengo más tiempo"] },
-      { key: "final", kicker: "Paso 5 · Su historia", title: "Revise y cuéntenos lo esencial" }
+      { key: "story", kicker: "Paso 6 · Su historia", title: "Cuéntenos su historia" },
+      { key: "contact", kicker: "Paso 7 · Su contacto", title: "¿Dónde le entregamos su canción?" },
+      { key: "final", kicker: "Paso 8 · Su paquete", title: "Revise y elija su paquete" }
     ],
     back: "← Atrás", next: "Siguiente →", toPay: "Continuar al pago", moment: "Un momento…",
-    namePh: "El nombre de esa persona (opcional)",
+    namePh: "El nombre de esa persona",
     pickPkg: "Elija su paquete", yourStory: "Su historia",
     storyPh: "Un recuerdo, una anécdota, lo que quiere que diga la canción… (opcional)",
     payNote: "Pago seguro con Stripe — tarjeta, Apple Pay o Google Pay. Su historia se guarda con su pedido.",
+    emailLbl: "Correo electrónico", emailPh: "su@correo.com",
+    emailHelp: "Aquí le llega su canción terminada.",
+    phoneLbl: "WhatsApp", phonePh: "(407) 555-0123",
+    phoneHelp: "Para avances y por si necesitamos un detalle de su historia. Si no es de EE. UU., incluya el código de país (+52, +57…).",
+    contactNote: "Solo lo usamos para su pedido. Nada de spam.",
+    emailBad: "Revise su correo: parece incompleto.", phoneBad: "Revise el número: necesitamos al menos 10 dígitos.",
+    emailSuggest: "¿Quiso decir", recapDeliver: "Entrega a:",
+    nickPh: "Apodo o cómo le dicen (opcional)",
+    fromPh: "¿De parte de quién? Ej.: Mamá y Papá",
+    moodLbl: "El ánimo", moodOpts: ["Emotiva", "Romántica", "Alegre / de fiesta", "Divertida", "Nostálgica"],
+    voiceLbl: "La voz", voiceOpts: ["Voz de mujer", "Voz de hombre", "Sin preferencia"],
+    langLbl: "El idioma de la canción", langOpts: ["Español", "Inglés", "Ambos"],
+    storyIntro: "Entre más nos cuente, más suya será la canción. Escriba como habla: no importa la ortografía.",
+    memLbl: "Un recuerdo especial", memPh: "¿Cómo se conocieron? ¿Un momento que nunca olvidan?",
+    specialLbl: "¿Qué hace especial a esta persona?", specialPh: "Su forma de ser, lo que más admira, lo que la hace única…",
+    phrasesLbl: "Frases, dichos o chistes internos", phrasesPh: "Algo que siempre dice, una frase que debe sonar tal cual…",
+    namesLbl: "Otros nombres que deben sonar", namesPh: "Hermanos, abuelos, mascotas… y cómo se pronuncian si es difícil",
+    avoidLbl: "Algo que NO debe aparecer", avoidPh: "Temas, nombres o palabras a evitar",
+    skipTitle: "Estos detalles hacen su canción única.",
+    skipBody: "Falta: {list}. Puede continuar, pero con ellos la canción suena a ustedes y no a cualquiera.",
+    skipGo: "Continuar sin ellos",
+    skipNames: { from: "de parte de quién", mood: "el ánimo", voice: "la voz", songLang: "el idioma",
+                 memory: "un recuerdo", special: "qué la hace especial", phrases: "frases o dichos" },
     recapDash: "—", recapFor: "para", recapParty: "fiesta:", recapEdit: "Editar mis respuestas",
     urgentTitle: "Su fiesta es esta semana.",
     urgentBody: " La entrega estándar tarda 7–10 días y no llegaría a tiempo. Le recomendamos <strong>Gran Gala (entrega 72h)</strong> o escribirnos por WhatsApp para confirmar fechas.",
@@ -843,7 +872,9 @@ const FLOW_TXT = {
       "Canción completa (2–3 min) · Producción de estudio · MP3 + WAV · 1 revisión · Entrega 7–10 días",
       "Experiencia narrativa completa · Producción premium · MP3 + WAV + letra enmarcable · Revisiones múltiples · Entrega urgente 72h"
     ],
-    wa: { greeting: "¡Hola! Quiero crear una canción personalizada 🎶", occasion: "Ocasión", forWhom: "Para", genre: "Género", party: "La fiesta es", pkg: "Paquete", story: "Nuestra historia", order: "Pedido" },
+    wa: { greeting: "¡Hola! Quiero crear una canción personalizada 🎶", occasion: "Ocasión", forWhom: "Para", genre: "Género", party: "La fiesta es", pkg: "Paquete", story: "Nuestra historia", order: "Pedido", email: "Correo",
+      nick: "Apodo", from: "De parte de", mood: "Ánimo", voice: "Voz", songLang: "Idioma de la canción",
+      special: "Qué la hace especial", phrases: "Frases", names: "Otros nombres", avoid: "Evitar" },
     readoutLive: "ESCENA GENERATIVA · EN VIVO"
   },
   en: {
@@ -855,15 +886,41 @@ const FLOW_TXT = {
       { key: "genre", kicker: "Step 3 · The flavor", title: "What genre do they love?", auto: true, custom: true,
         customPh: "Type it here — we compose any style",
         options: ["Waltz", "Ballad", "Cumbia", "Bachata", "Corrido", "Banda", "Mariachi", "Bolero", "Salsa", "Reggaeton", "Norteño", "Pop", "Other"] },
-      { key: "date", kicker: "Step 4 · The date", title: "When is the party?", auto: true,
+      { key: "sound", kicker: "Step 4 · The sound", title: "How should the song feel?" },
+      { key: "date", kicker: "Step 5 · The date", title: "When is the party?", auto: true,
         options: ["This week", "This month", "I have more time"] },
-      { key: "final", kicker: "Step 5 · Your story", title: "Review & tell us the essentials" }
+      { key: "story", kicker: "Step 6 · Your story", title: "Tell us your story" },
+      { key: "contact", kicker: "Step 7 · Your contact", title: "Where should we deliver your song?" },
+      { key: "final", kicker: "Step 8 · Your package", title: "Review & choose your package" }
     ],
     back: "← Back", next: "Next →", toPay: "Continue to payment", moment: "One moment…",
-    namePh: "That person's name (optional)",
+    namePh: "That person's name",
     pickPkg: "Choose your package", yourStory: "Your story",
     storyPh: "A memory, an anecdote, what you want the song to say… (optional)",
     payNote: "Secure payment with Stripe — card, Apple Pay, or Google Pay. Your story is saved with your order.",
+    emailLbl: "Email", emailPh: "you@email.com",
+    emailHelp: "Your finished song arrives here.",
+    phoneLbl: "WhatsApp", phonePh: "(407) 555-0123",
+    phoneHelp: "For updates, and in case we need a detail about your story. Outside the US? Include your country code (+52, +57…).",
+    contactNote: "Used only for your order. No spam.",
+    emailBad: "Check your email — it looks incomplete.", phoneBad: "Check the number — we need at least 10 digits.",
+    emailSuggest: "Did you mean", recapDeliver: "Deliver to:",
+    nickPh: "Nickname or what people call them (optional)",
+    fromPh: "Who is it from? E.g. Mom and Dad",
+    moodLbl: "The mood", moodOpts: ["Emotional", "Romantic", "Joyful / party", "Fun", "Nostalgic"],
+    voiceLbl: "The voice", voiceOpts: ["Female voice", "Male voice", "No preference"],
+    langLbl: "The song's language", langOpts: ["Spanish", "English", "Both"],
+    storyIntro: "The more you tell us, the more the song becomes yours. Write the way you talk — spelling doesn't matter.",
+    memLbl: "A special memory", memPh: "How did you meet? A moment you'll never forget?",
+    specialLbl: "What makes this person special?", specialPh: "Who they are, what you admire most, what makes them unique…",
+    phrasesLbl: "Phrases, sayings or inside jokes", phrasesPh: "Something they always say, a line that should be sung word for word…",
+    namesLbl: "Other names to include", namesPh: "Siblings, grandparents, pets… and how to pronounce them if tricky",
+    avoidLbl: "Anything to leave OUT", avoidPh: "Topics, names or words to avoid",
+    skipTitle: "These details make your song one of a kind.",
+    skipBody: "Still missing: {list}. You can continue, but with them the song sounds like you — not like anyone.",
+    skipGo: "Continue without them",
+    skipNames: { from: "who it's from", mood: "the mood", voice: "the voice", songLang: "the language",
+                 memory: "a memory", special: "what makes them special", phrases: "phrases or sayings" },
     recapDash: "—", recapFor: "for", recapParty: "party:", recapEdit: "Edit my answers",
     urgentTitle: "Your party is this week.",
     urgentBody: " Standard delivery takes 7–10 days and wouldn't arrive in time. We recommend <strong>Gran Gala (72h delivery)</strong> or messaging us on WhatsApp to confirm dates.",
@@ -876,7 +933,9 @@ const FLOW_TXT = {
       "Full song (2–3 min) · Studio production · MP3 + WAV · 1 revision · 7–10 day delivery",
       "Full narrative experience · Premium production · MP3 + WAV + frameable lyrics · Multiple revisions · 72h rush delivery"
     ],
-    wa: { greeting: "Hi! I'd like to create a personalized song 🎶", occasion: "Occasion", forWhom: "For", genre: "Genre", party: "The party is", pkg: "Package", story: "Our story", order: "Order" },
+    wa: { greeting: "Hi! I'd like to create a personalized song 🎶", occasion: "Occasion", forWhom: "For", genre: "Genre", party: "The party is", pkg: "Package", story: "Our story", order: "Order", email: "Email",
+      nick: "Nickname", from: "From", mood: "Mood", voice: "Voice", songLang: "Song language",
+      special: "What makes them special", phrases: "Phrases", names: "Other names", avoid: "Avoid" },
     readoutLive: "GENERATIVE SCENE · LIVE"
   }
 };
@@ -896,6 +955,84 @@ const optText = (k) => {
 };
 const isUrgentDate = () => flowState.dateIdx === 0; // 0 = "Esta semana" / "This week"
 const selectedPkg = () => PKGS.find(p => flowState.pkg.startsWith(p.name));
+
+/* Contacto: sin un correo y un WhatsApp válidos no se puede entregar la canción,
+   así que el paso no avanza hasta que ambos se ven bien. */
+const validEmail = (e) => /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)*\.[a-z]{2,}$/i.test(String(e || "").trim());
+const phoneDigits = (ph) => String(ph || "").replace(/\D/g, "");
+const validPhone = (ph) => { const n = phoneDigits(ph).length; return n >= 10 && n <= 15; };
+/* errores de dominio más comunes → sugerencia de un toque ("¿Quiso decir …@gmail.com?") */
+const EMAIL_FIX = {
+  "gmial.com": "gmail.com", "gmal.com": "gmail.com", "gamil.com": "gmail.com", "gmai.com": "gmail.com",
+  "gnail.com": "gmail.com", "gmail.co": "gmail.com", "gmail.con": "gmail.com", "gmail.cm": "gmail.com",
+  "hotmal.com": "hotmail.com", "hotmial.com": "hotmail.com", "hotmai.com": "hotmail.com", "hotmil.com": "hotmail.com",
+  "hotmail.co": "hotmail.com", "hotmail.con": "hotmail.com",
+  "yaho.com": "yahoo.com", "yahooo.com": "yahoo.com", "yahoo.co": "yahoo.com", "yahoo.con": "yahoo.com",
+  "outlok.com": "outlook.com", "outloo.com": "outlook.com", "outlook.co": "outlook.com", "outlook.con": "outlook.com",
+  "iclod.com": "icloud.com", "icoud.com": "icloud.com", "icloud.co": "icloud.com", "icloud.con": "icloud.com"
+};
+const emailTypo = (e) => {
+  const m = /^([^@\s]+)@([^@\s]+)$/.exec(String(e || "").trim().toLowerCase());
+  const fix = m && EMAIL_FIX[m[2]];
+  return fix ? `${m[1]}@${fix}` : null;
+};
+
+/* texto elegido en el paso "El sonido" (por índice: sobrevive al cambio de idioma) */
+const SOUND_OPTS = { mood: "moodOpts", voice: "voiceOpts", songLang: "langOpts" };
+const soundText = (k) => {
+  const i = flowState[k + "Idx"];
+  return i == null ? "" : FT()[SOUND_OPTS[k]][i];
+};
+
+/* Detalles opcionales pero muy recomendados: si se dejan en blanco, un aviso
+   suave una sola vez antes de avanzar (mismo patrón que el aviso de urgencia). */
+const SUGGESTED = { relation: ["from"], sound: ["mood", "voice", "songLang"], story: ["memory", "special", "phrases"] };
+function missingSuggested(stepKey) {
+  return (SUGGESTED[stepKey] || []).filter(k =>
+    k in SOUND_OPTS ? flowState[k + "Idx"] == null : !(flowState[k] || "").trim());
+}
+function skipNudgeText(missing) {
+  const t = FT();
+  return " " + t.skipBody.replace("{list}", missing.map(k => t.skipNames[k]).join(", "));
+}
+function showSkipNudge(missing) {
+  const t = FT();
+  flowBody.querySelector(".flow-skip")?.remove();
+  const box = document.createElement("div");
+  box.className = "flow-skip";
+  const strong = document.createElement("strong");
+  strong.textContent = t.skipTitle;
+  const body = document.createElement("span");
+  body.textContent = skipNudgeText(missing);
+  box.append(strong, body);
+  flowBody.appendChild(box);
+  box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+/* si completan lo que faltaba, el aviso se actualiza o desaparece */
+function refreshSkipNudge() {
+  if (!skipConfirmArmed) return;
+  const missing = missingSuggested(FT().steps[flowStep].key);
+  const box = flowBody.querySelector(".flow-skip");
+  if (!missing.length) {
+    skipConfirmArmed = false;
+    box?.remove();
+    flowNext.textContent = FT().next;
+  } else if (box) {
+    box.querySelector("span").textContent = skipNudgeText(missing);
+  }
+}
+
+/* campo de texto ligado a flowState[key] */
+function textField(placeholder, maxLength, key, multiline) {
+  const el = document.createElement(multiline ? "textarea" : "input");
+  el.className = multiline ? "flow-textarea sm" : "flow-input";
+  if (!multiline) el.type = "text";
+  el.maxLength = maxLength;
+  el.placeholder = placeholder;
+  el.value = flowState[key] || "";
+  el.addEventListener("input", () => { flowState[key] = el.value; refreshFlowNav(); refreshSkipNudge(); });
+  return el;
+}
 
 function chipGrid(options, selectedIdx, onPick) {
   const grid = document.createElement("div");
@@ -924,6 +1061,27 @@ function renderRecap() {
   recap.innerHTML =
     `<strong>${optText("occasion") || dash}</strong> · ${t.recapFor} <strong>${who}</strong> · ` +
     `<strong>${optText("genre") || dash}</strong> · ${t.recapParty} <strong>${optText("date") || dash}</strong><br>`;
+  const sound = ["mood", "voice", "songLang"].map(soundText).filter(Boolean);
+  if (sound.length) {
+    const sl = document.createElement("span");
+    sl.className = "recap-deliver";
+    sl.textContent = sound.join(" · ");
+    recap.append(sl, document.createElement("br"));
+  }
+  if (flowState.email.trim()) {
+    /* texto del cliente: con textContent, nunca como HTML */
+    const del = document.createElement("span");
+    del.className = "recap-deliver";
+    const em = document.createElement("strong");
+    em.textContent = flowState.email.trim();
+    del.append(`${t.recapDeliver} `, em);
+    if (flowState.phone.trim()) {
+      const ph = document.createElement("strong");
+      ph.textContent = flowState.phone.trim();
+      del.append(" · WhatsApp ", ph);
+    }
+    recap.append(del, document.createElement("br"));
+  }
   const edit = document.createElement("button");
   edit.type = "button";
   edit.className = "recap-edit";
@@ -960,6 +1118,7 @@ function renderFlowStep() {
   flowBody.innerHTML = "";
   flowBody.scrollTop = 0;
   urgentConfirmArmed = false;
+  skipConfirmArmed = false;
 
   const kicker = document.createElement("p");
   kicker.className = "flow-kicker";
@@ -996,18 +1155,122 @@ function renderFlowStep() {
       flowBody.appendChild(ci);
     }
   } else if (step.key === "relation") {
-    const input = document.createElement("input");
-    input.className = "flow-input";
-    input.type = "text";
-    input.maxLength = 60;
-    input.placeholder = t.namePh;
-    input.value = flowState.name;
-    input.addEventListener("input", () => { flowState.name = input.value; });
-    flowBody.appendChild(input);
+    const nameIn = textField(t.namePh, 60, "name");
+    const nickIn = textField(t.nickPh, 60, "nick");
+    nickIn.style.margin = "10px 0 14px";
+    flowBody.append(nameIn, nickIn);
     flowBody.appendChild(chipGrid(step.options, flowState.relationIdx, (i) => {
       flowState.relationIdx = i;
       refreshFlowNav();
     }));
+    const fromIn = textField(t.fromPh, 80, "from");
+    fromIn.style.marginTop = "14px";
+    flowBody.appendChild(fromIn);
+    if (!flowState.name.trim()) setTimeout(() => nameIn.focus(), 0);
+  } else if (step.key === "sound") {
+    [["mood", t.moodLbl, t.moodOpts], ["voice", t.voiceLbl, t.voiceOpts], ["songLang", t.langLbl, t.langOpts]]
+      .forEach(([k, lbl, opts]) => {
+        const label = document.createElement("p");
+        label.className = "flow-label";
+        label.textContent = lbl;
+        flowBody.append(label, chipGrid(opts, flowState[k + "Idx"], (i) => {
+          flowState[k + "Idx"] = i;
+          refreshSkipNudge();
+        }));
+      });
+  } else if (step.key === "story") {
+    const intro = document.createElement("p");
+    intro.className = "flow-help";
+    intro.style.marginTop = "0";
+    intro.textContent = t.storyIntro;
+    flowBody.appendChild(intro);
+    [["memory", t.memLbl, t.memPh, 800, true], ["special", t.specialLbl, t.specialPh, 600, true],
+     ["phrases", t.phrasesLbl, t.phrasesPh, 400, true], ["names", t.namesLbl, t.namesPh, 200, true],
+     ["avoid", t.avoidLbl, t.avoidPh, 200, false]].forEach(([k, lbl, ph, max, multi]) => {
+      const label = document.createElement("label");
+      label.className = "flow-label";
+      label.htmlFor = "flow-" + k;
+      label.textContent = lbl;
+      const f = textField(ph, max, k, multi);
+      f.id = "flow-" + k;
+      flowBody.append(label, f);
+    });
+  } else if (step.key === "contact") {
+    const field = (id, labelText, input, helpText) => {
+      const lbl = document.createElement("label");
+      lbl.className = "flow-label";
+      lbl.htmlFor = id;
+      lbl.textContent = labelText;
+      input.id = id;
+      const help = document.createElement("p");
+      help.className = "flow-help";
+      help.textContent = helpText;
+      const msg = document.createElement("p");
+      msg.className = "flow-msg";
+      msg.setAttribute("aria-live", "polite");
+      flowBody.append(lbl, input, msg, help);
+      return msg;
+    };
+    const emailIn = document.createElement("input");
+    Object.assign(emailIn, { className: "flow-input", type: "email", inputMode: "email", autocomplete: "email",
+      maxLength: 120, placeholder: t.emailPh, value: flowState.email, spellcheck: false });
+    emailIn.setAttribute("autocapitalize", "off");
+    const phoneIn = document.createElement("input");
+    Object.assign(phoneIn, { className: "flow-input", type: "tel", inputMode: "tel", autocomplete: "tel",
+      maxLength: 25, placeholder: t.phonePh, value: flowState.phone });
+    const emailMsg = field("flow-email", t.emailLbl, emailIn, t.emailHelp);
+    const phoneMsg = field("flow-phone", t.phoneLbl, phoneIn, t.phoneHelp);
+    const note = document.createElement("p");
+    note.className = "flow-note";
+    note.textContent = t.contactNote;
+    flowBody.appendChild(note);
+
+    /* errores solo al salir del campo (no mientras se escribe); la sugerencia de dominio sí al instante */
+    const checkEmail = (showError) => {
+      const e = flowState.email.trim();
+      const fix = emailTypo(e);
+      /* la misma sugerencia ya está a la vista: no la redibujes (el toque se perdería) */
+      if (fix && emailMsg.dataset.fix === fix) return;
+      emailMsg.dataset.fix = fix || "";
+      emailMsg.textContent = "";
+      emailMsg.classList.remove("err");
+      if (fix) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "flow-suggest";
+        b.textContent = fix;
+        /* no robar el foco al campo: así su "blur" no interfiere con el toque */
+        b.addEventListener("pointerdown", (ev) => ev.preventDefault());
+        b.addEventListener("click", () => {
+          flowState.email = fix;
+          emailIn.value = fix;
+          checkEmail(false);
+          refreshFlowNav();
+          phoneIn.focus();
+        });
+        emailMsg.append(`${t.emailSuggest} `, b, "?");
+      } else if (showError && e && !validEmail(e)) {
+        emailMsg.textContent = t.emailBad;
+        emailMsg.classList.add("err");
+      }
+    };
+    const checkPhone = (showError) => {
+      const bad = showError && flowState.phone.trim() && !validPhone(flowState.phone);
+      phoneMsg.textContent = bad ? t.phoneBad : "";
+      phoneMsg.classList.toggle("err", !!bad);
+    };
+    emailIn.addEventListener("input", () => { flowState.email = emailIn.value; checkEmail(false); refreshFlowNav(); });
+    emailIn.addEventListener("blur", () => checkEmail(true));
+    phoneIn.addEventListener("input", () => { flowState.phone = phoneIn.value; checkPhone(false); refreshFlowNav(); });
+    phoneIn.addEventListener("blur", () => checkPhone(true));
+    [emailIn, phoneIn].forEach(inp => inp.addEventListener("keydown", (ev) => {
+      if (ev.key !== "Enter") return;
+      ev.preventDefault();
+      if (inp === emailIn) phoneIn.focus();
+      else if (!flowNext.classList.contains("off")) nextFlowStep();
+    }));
+    checkEmail(false);
+    setTimeout(() => (flowState.email ? phoneIn : emailIn).focus(), 0);
   } else {
     /* paso final: recap + aviso de urgencia + paquete (con contenido) + historia */
     flowBody.appendChild(renderRecap());
@@ -1037,19 +1300,10 @@ function renderFlowStep() {
         flowBody.appendChild(inc);
       }
     });
-    const lbl2 = document.createElement("p");
-    lbl2.className = "flow-label";
-    lbl2.textContent = t.yourStory;
-    const ta = document.createElement("textarea");
-    ta.className = "flow-textarea";
-    ta.maxLength = 600;
-    ta.placeholder = t.storyPh;
-    ta.value = flowState.story;
-    ta.addEventListener("input", () => { flowState.story = ta.value; });
     const note = document.createElement("p");
     note.className = "flow-note";
     note.textContent = t.payNote;
-    flowBody.append(lbl2, ta, note);
+    flowBody.append(note);
   }
 
   flowProgress.style.transform = `scaleX(${(flowStep + 1) / steps.length})`;
@@ -1064,6 +1318,12 @@ function refreshFlowNav() {
   let ready;
   if (step.key === "final") {
     ready = true;
+  } else if (step.key === "contact") {
+    ready = validEmail(flowState.email) && validPhone(flowState.phone);
+  } else if (step.key === "relation") {
+    ready = flowState.relationIdx != null && !!flowState.name.trim();
+  } else if (step.key === "sound" || step.key === "story") {
+    ready = true; // opcionales: el aviso suave se encarga de recomendarlos
   } else {
     const i = flowState[step.key + "Idx"];
     ready = i != null;
@@ -1080,10 +1340,17 @@ function buildWaUrl(orderId) {
   const lines = [w.greeting];
   if (optText("occasion")) lines.push(`• ${w.occasion}: ${optText("occasion")}`);
   if (optText("relation")) lines.push(`• ${w.forWhom}: ${optText("relation")}${flowState.name.trim() ? " — " + flowState.name.trim() : ""}`);
+  if (flowState.nick.trim()) lines.push(`• ${w.nick}: ${flowState.nick.trim()}`);
+  if (flowState.from.trim()) lines.push(`• ${w.from}: ${flowState.from.trim()}`);
   if (optText("genre")) lines.push(`• ${w.genre}: ${optText("genre")}`);
+  ["mood", "voice", "songLang"].forEach(k => { if (soundText(k)) lines.push(`• ${w[k]}: ${soundText(k)}`); });
   if (optText("date")) lines.push(`• ${w.party}: ${optText("date")}`);
   lines.push(`• ${w.pkg}: ${flowState.pkg}`);
-  if (flowState.story.trim()) lines.push(`• ${w.story}: ${flowState.story.trim()}`);
+  if (flowState.memory.trim()) lines.push(`• ${w.story}: ${flowState.memory.trim()}`);
+  [["special", "special"], ["phrases", "phrases"], ["names", "names"], ["avoid", "avoid"]].forEach(([k, lbl]) => {
+    if (flowState[k].trim()) lines.push(`• ${w[lbl]}: ${flowState[k].trim()}`);
+  });
+  if (flowState.email.trim()) lines.push(`• ${w.email}: ${flowState.email.trim()}`);
   if (orderId) lines.push(`• ${w.order}: ${orderId}`);
   return `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(lines.join("\n"))}`;
 }
@@ -1097,6 +1364,7 @@ function goToStripe(pkg, orderId) {
   url.searchParams.set("client_reference_id", orderId);
   url.searchParams.set("locale", LANG); // Stripe muestra el checkout en el idioma elegido
   if (PREFILL_PROMO) url.searchParams.set("prefilled_promo_code", PREFILL_PROMO);
+  if (validEmail(flowState.email)) url.searchParams.set("prefilled_email", flowState.email.trim());
   window.location.href = url.toString();
 }
 
@@ -1179,7 +1447,18 @@ async function submitOrderAndPay() {
     genero: optText("genre"),
     fechaEvento: optText("date"),
     paquete: flowState.pkg,
-    historia: flowState.story.trim(),
+    historia: flowState.memory.trim(),
+    apodo: flowState.nick.trim(),
+    deParte: flowState.from.trim(),
+    animo: soundText("mood"),
+    voz: soundText("voice"),
+    idiomaCancion: soundText("songLang"),
+    especial: flowState.special.trim(),
+    frases: flowState.phrases.trim(),
+    otrosNombres: flowState.names.trim(),
+    evitar: flowState.avoid.trim(),
+    email: flowState.email.trim(),
+    telefono: flowState.phone.trim(),
     idioma: LANG,
     pagina: location.href,
     fecha: new Date().toISOString()
@@ -1202,6 +1481,13 @@ async function submitOrderAndPay() {
 function nextFlowStep() {
   if (flowStep === FT().steps.length - 1) {
     submitOrderAndPay();
+    return;
+  }
+  const missing = missingSuggested(FT().steps[flowStep].key);
+  if (missing.length && !skipConfirmArmed) {
+    skipConfirmArmed = true;
+    showSkipNudge(missing);
+    flowNext.textContent = FT().skipGo;
     return;
   }
   flowStep++;

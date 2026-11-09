@@ -568,6 +568,26 @@ h2 { font-size: clamp(2rem, 4.6vw, 3.4rem); text-align: center; margin-bottom: 1
 .pkg-price { font-family: var(--serif); font-size: 1.15rem; color: var(--oro-2); white-space: nowrap; }
 .flow-label { font-size: 0.78rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-dim); margin: 18px 0 10px; }
 .flow-note { margin-top: 14px; font-size: 0.78rem; color: rgba(248,237,218,0.45); text-align: center; line-height: 1.6; }
+/* Paso de contacto: ayuda bajo cada campo, mensajes (error / sugerencia) y la sugerencia de dominio de un toque */
+.flow-help { margin-top: 6px; font-size: 0.8rem; color: rgba(248,237,218,0.5); line-height: 1.5; }
+.flow-msg { margin-top: 6px; font-size: 0.85rem; color: var(--oro-2); line-height: 1.4; }
+.flow-msg:empty { display: none; }
+.flow-msg.err { color: var(--rosa); }
+.flow-suggest {
+  background: none; border: none; padding: 0; font: inherit; cursor: pointer;
+  color: var(--oro-2); text-decoration: underline; text-underline-offset: 3px;
+}
+.flow-suggest:hover { color: var(--oro); }
+.flow-recap .recap-deliver { display: inline-block; margin-top: 6px; word-break: break-word; }
+/* Paso "Su historia": varias preguntas guiadas, cajas más bajas que la antigua caja única */
+.flow-textarea.sm { min-height: 76px; }
+/* Aviso suave cuando se dejan en blanco detalles recomendados (oro: es sugerencia, no error) */
+.flow-skip {
+  border: 1px solid rgba(217,166,81,0.5); border-radius: 14px;
+  background: rgba(87,26,51,0.35); padding: 14px 16px; margin-top: 16px;
+  font-size: 0.88rem; line-height: 1.6; color: var(--crema);
+}
+.flow-skip strong { color: var(--oro-2); font-weight: 500; }
 .flow-alt-wa {
   display: block; margin-top: 10px; font-size: 0.82rem; text-align: center;
   color: rgba(248,237,218,0.7); text-decoration: underline; text-underline-offset: 3px;

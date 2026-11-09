@@ -97,10 +97,15 @@ powershell -ExecutionPolicy Bypass -File serve.ps1
       banner se actualizara. Ahora ESTRENO20 (20%, cupón "Lanzamiento 20%"),
       vence el 4 feb 2027 23:59 ET; banner y `PREFILL_PROMO` apuntan a él.
       **Al vencer: quitar el banner de index.html y vaciar PREFILL_PROMO.**
-- [ ] Página de gracias: hoy, al pagar, el cliente queda en la pantalla genérica
-      de Stripe (success_url = stripe.com), sin decirle cuándo llega su canción.
-      Configurar un mensaje propio o redirigir de vuelta al sitio en cada
-      Payment Link (Dashboard → Payment Links → After payment).
+- [x] Página de gracias propia — nov 9 2026: `gracias.html` (servida en /gracias).
+      Los 3 Payment Links redirigen ahí al pagar (after_completion = redirect).
+      Promete confirmación por WhatsApp en 48 h, entrega 7–10 días (Gran Gala 72 h)
+      por correo, y muestra Order ID, nombre y el correo de entrega.
+- [x] Formulario completo — nov 9 2026: 8 pasos con contacto (correo + WhatsApp,
+      obligatorios) y todos los detalles de la canción (sonido, historia guiada).
+      Obligatorios: nombre, género, correo, WhatsApp; el resto con aviso suave.
+      Backend v2 escribe por nombre de encabezado (columnas reordenables;
+      no renombrar encabezados).
 - [ ] La hoja registra pedidos ANTES del pago: quien abandona el checkout también
       deja fila. Falta marcar PAGADO automáticamente (webhook de Stripe
       checkout.session.completed → buscar el Order ID en la hoja).

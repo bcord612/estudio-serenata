@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Gracias — Estudio Serenata</title>
+  <!-- Página de confirmación tras el pago en Stripe (Payment Links → after_completion → redirect).
+       No es una página de aterrizaje: no se indexa. -->
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#120a14" />
+  <link rel="icon" href="favicon.ico" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&family=Great+Vibes&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body {
+      min-height: 100svh;
+      background:
+        radial-gradient(ellipse 80% 55% at 50% 0%, rgba(122,35,71,0.45), transparent 70%),
+        radial-gradient(ellipse 60% 40% at 50% 100%, rgba(217,166,81,0.10), transparent 70%),
+        var(--noche);
+    }
+    .g-wrap {
+      max-width: 560px; margin: 0 auto;
+      padding: max(28px, env(safe-area-inset-top)) 16px max(40px, env(safe-area-inset-bottom));
+    }
+    .g-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; }
+    .g-brand { text-decoration: none; color: var(--crema); }
+    .g-check {
+      width: 64px; height: 64px; margin: 0 auto 20px; border-radius: 50%;
+      display: grid; place-items: center;
+      background: radial-gradient(circle, rgba(217,166,81,0.22), rgba(217,166,81,0.06));
+      border: 1px solid rgba(217,166,81,0.45); color: var(--oro-2); font-size: 1.7rem;
+    }
+    .g-kicker {
+      text-align: center; color: var(--oro); font-size: 0.72rem;
+      letter-spacing: 0.32em; text-transform: uppercase; margin-bottom: 10px;
+    }
+    .g-wrap h1 {
+      text-align: center; font-size: clamp(2.1rem, 8vw, 3rem); line-height: 1.08; margin-bottom: 14px;
+    }
+    .g-lead { text-align: center; color: var(--ink-dim); font-size: 1.05rem; line-height: 1.6; margin-bottom: 30px; }
+    .g-lead strong { color: var(--crema); font-weight: 500; }
+    .g-card {
+      background: linear-gradient(180deg, rgba(87,26,51,0.38), rgba(28,15,31,0.78));
+      border: 1px solid rgba(217,166,81,0.22); border-radius: 18px; padding: 22px; margin-bottom: 18px;
+    }
+    .g-order { text-align: center; }
+    .g-order .lbl { color: var(--ink-dim); font-size: 0.82rem; letter-spacing: 0.08em; }
+    .g-order .id {
+      font-weight: 500; font-size: 1.35rem; letter-spacing: 0.06em;
+      color: var(--oro-2); margin: 6px 0; word-break: break-all;
+    }
+    .g-order .hint { color: var(--ink-dim); font-size: 0.86rem; line-height: 1.5; }
+    .g-steps-title { font-family: var(--serif); font-size: 1.55rem; text-align: left; margin: 6px 0 14px; }
+    .g-steps { list-style: none; }
+    .g-steps li { display: grid; grid-template-columns: 34px 1fr; gap: 12px; padding: 12px 0; }
+    .g-steps li + li { border-top: 1px solid rgba(248,237,218,0.08); }
+    .g-num {
+      width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
+      border: 1px solid rgba(217,166,81,0.5); color: var(--oro-2); font-size: 0.85rem; font-weight: 500;
+    }
+    .g-steps h3 { font-family: var(--sans); font-weight: 500; font-size: 0.98rem; margin-bottom: 4px; color: var(--crema); }
+    .g-steps p { color: var(--ink-dim); font-size: 0.93rem; line-height: 1.55; }
+    .g-wa { text-align: center; }
+    .g-wa p { color: var(--ink-dim); font-size: 0.95rem; line-height: 1.55; margin-bottom: 16px; }
+    .g-wa .btn { width: 100%; text-align: center; }
+    .g-home { display: block; text-align: center; margin-top: 26px; color: var(--ink-dim); font-size: 0.9rem; }
+    .g-home:hover { color: var(--oro-2); }
+    .g-fade { opacity: 0; transform: translateY(10px); animation: g-in 0.9s var(--ease-out) forwards; }
+    .g-wrap > :nth-child(3) { animation-delay: 0.08s; }
+    .g-wrap > :nth-child(4) { animation-delay: 0.16s; }
+    .g-wrap > :nth-child(5) { animation-delay: 0.24s; }
+    @keyframes g-in { to { opacity: 1; transform: none; } }
+    @media (prefers-reduced-motion: reduce) { .g-fade { animation: none; opacity: 1; transform: none; } }
+  </style>
+</head>
+<body>
+  <main class="g-wrap">
+    <div class="g-top">
+      <a class="g-brand nav-brand" href="/"><span class="brand-casa">ESTUDIO</span><span class="brand-sere">Serenata</span></a>
+      <button class="lang-toggle" id="g-lang" type="button">EN</button>
+    </div>
+
+    <section class="g-fade">
+      <div class="g-check" aria-hidden="true">♪</div>
+      <p class="g-kicker" data-t="kicker"></p>
+      <h1 data-t="title"></h1>
+      <p class="g-lead" id="g-lead"></p>
+    </section>
+
+    <section class="g-card g-order g-fade" id="g-order" hidden>
+      <div class="lbl" data-t="orderLabel"></div>
+      <div class="id" id="g-order-id"></div>
+      <div class="hint" data-t="orderHint"></div>
+    </section>
+
+    <section class="g-card g-fade">
+      <h2 class="g-steps-title" data-t="nextTitle"></h2>
+      <ol class="g-steps">
+        <li><span class="g-num">1</span><div><h3 data-t="s1h"></h3><p data-t="s1p"></p></div></li>
+        <li><span class="g-num">2</span><div><h3 data-t="s2h"></h3><p id="g-s2p"></p></div></li>
+        <li><span class="g-num">3</span><div><h3 data-t="s3h"></h3><p id="g-s3p"></p></div></li>
+      </ol>
+    </section>
+
+    <section class="g-card g-wa g-fade">
+      <p data-t="waText"></p>
+      <a class="btn btn-gold btn-lg" id="g-wa" href="https://wa.me/14072057707" target="_blank" rel="noopener" data-t="waBtn"></a>
+    </section>
+
+    <a class="g-home" href="/" data-t="home"></a>
+  </main>
+
+  <script>
+  (() => {
+    const WA_NUMBER = "14072057707"; // mismo número que WA_NUMBER en cinematic.js
+
+    /* Textos. Registro "usted", como el resto del flujo transaccional del sitio.
+       Lo prometido aquí sigue el SOP de MARKETING-PLAN.md §9: preguntas en 24 h,
+       producción 7–10 días (Gran Gala 72 h), entrega por correo. */
+    const T = {
+      es: {
+        kicker: "Pago recibido",
+        title: "¡Gracias! Su canción ya está en marcha.",
+        leadNamed: "La canción para ",
+        leadNamedEnd: " ya está en nuestras manos.",
+        lead: "Su historia ya está en nuestras manos.",
+        orderLabel: "Su número de pedido",
+        orderHint: "Guárdelo: con él encontramos su historia en segundos.",
+        nextTitle: "Lo que sigue",
+        s1h: "En las próximas 24 horas",
+        s1p: "Le escribimos al correo que usó al pagar con 2–3 preguntas para conocer mejor su historia: anécdotas, frases de la familia, nombres que deben sonar. Revise también la carpeta de spam.",
+        s2h: "Componemos y grabamos",
+        s2p: { gala: "Su canción se escribe y se produce con prioridad: entrega en 72 horas.",
+               std: "Su canción se escribe y se produce en estudio: entrega en 7–10 días.",
+               any: "Su canción se escribe y se produce en estudio: entrega en 7–10 días (72 horas con Gran Gala)." },
+        s3h: "Le llega por correo",
+        s3p: { verso: "Recibe su canción en MP3, lista para regalar.",
+               serenata: "Recibe su canción en MP3 y WAV (calidad de estudio), lista para regalar.",
+               gala: "Recibe su canción en MP3 y WAV, más la letra lista para enmarcar.",
+               any: "Recibe su canción lista para regalar, en el correo que usó al pagar." },
+        waText: "¿Prefiere recibir avances de su canción por WhatsApp? Escríbanos y le avisamos por ahí.",
+        waBtn: "Sí, avísenme por WhatsApp",
+        waMsg: (id) => "Hola, acabo de pagar mi canción en Estudio Serenata" + (id ? " (pedido " + id + ")" : "") + ". Quiero recibir avances por WhatsApp. 🎶",
+        home: "Volver a Estudio Serenata",
+        toggle: "EN", toggleAria: "Switch to English", docTitle: "Gracias — Estudio Serenata"
+      },
+      en: {
+        kicker: "Payment received",
+        title: "Thank you! Your song is on its way.",
+        leadNamed: "The song for ",
+        leadNamedEnd: " is now in our hands.",
+        lead: "Your story is now in our hands.",
+        orderLabel: "Your order number",
+        orderHint: "Keep it handy — it lets us find your story in seconds.",
+        nextTitle: "What happens next",
+        s1h: "Within the next 24 hours",
+        s1p: "We'll email you at the address you used to pay, with 2–3 questions to get to know your story better: memories, family sayings, names that should be in the song. Please check your spam folder too.",
+        s2h: "We write and record",
+        s2p: { gala: "Your song is written and produced with priority: delivered in 72 hours.",
+               std: "Your song is written and produced in the studio: delivered in 7–10 days.",
+               any: "Your song is written and produced in the studio: delivered in 7–10 days (72 hours with Gran Gala)." },
+        s3h: "It arrives by email",
+        s3p: { verso: "You'll receive your song as an MP3, ready to give.",
+               serenata: "You'll receive your song as MP3 and WAV (studio quality), ready to give.",
+               gala: "You'll receive your song as MP3 and WAV, plus the lyrics ready to frame.",
+               any: "You'll receive your song, ready to give, at the email you used to pay." },
+        waText: "Would you rather get updates on your song by WhatsApp? Message us and we'll keep you posted there.",
+        waBtn: "Yes, update me on WhatsApp",
+        waMsg: (id) => "Hi, I just paid for my song at Estudio Serenata" + (id ? " (order " + id + ")" : "") + ". I'd like updates on WhatsApp. 🎶",
+        home: "Back to Estudio Serenata",
+        toggle: "ES", toggleAria: "Cambiar a español", docTitle: "Thank you — Estudio Serenata"
+      }
+    };
+
+    /* El pedido que este navegador acaba de hacer (cinematic.js lo guarda antes de ir a Stripe).
+       Si no está (otro dispositivo, modo privado), la página muestra la versión general. */
+    let order = null;
+    let savedLang = null;
+    try { order = JSON.parse(localStorage.getItem("es-ultimo-pedido") || "null"); } catch (_) {}
+    try { savedLang = localStorage.getItem("es-lang"); } catch (_) {}
+    let lang = savedLang === "en" || savedLang === "es"
+      ? savedLang
+      : (order && order.idioma === "en" ? "en" : "es");
+
+    function pkgKey(p) {
+      p = String(p || "").toLowerCase();
+      if (p.includes("gala")) return "gala";
+      if (p.includes("serenata")) return "serenata";
+      if (p.includes("verso")) return "verso";
+      return "";
+    }
+
+    function render() {
+      const t = T[lang];
+      document.documentElement.lang = lang;
+      document.title = t.docTitle;
+      document.querySelectorAll("[data-t]").forEach(el => { el.textContent = t[el.dataset.t]; });
+
+      const id = order && /^ES-[A-Z0-9-]+$/.test(order.orderId || "") ? order.orderId : "";
+      const name = order && order.nombre ? String(order.nombre).slice(0, 60) : "";
+      const pkg = pkgKey(order && order.paquete);
+
+      /* Texto escrito por el cliente: siempre como texto, nunca como HTML */
+      const lead = document.getElementById("g-lead");
+      lead.textContent = "";
+      if (name) {
+        const strong = document.createElement("strong");
+        strong.textContent = name;
+        lead.append(t.leadNamed, strong, t.leadNamedEnd);
+      } else {
+        lead.textContent = t.lead;
+      }
+
+      document.getElementById("g-order").hidden = !id;
+      document.getElementById("g-order-id").textContent = id;
+      document.getElementById("g-s2p").textContent = pkg ? (pkg === "gala" ? t.s2p.gala : t.s2p.std) : t.s2p.any;
+      document.getElementById("g-s3p").textContent = t.s3p[pkg] || t.s3p.any;
+      document.getElementById("g-wa").href = "https://wa.me/" + WA_NUMBER + "?text=" + encodeURIComponent(t.waMsg(id));
+
+      const btn = document.getElementById("g-lang");
+      btn.textContent = t.toggle;
+      btn.setAttribute("aria-label", t.toggleAria);
+    }
+
+    document.getElementById("g-lang").addEventListener("click", () => {
+      lang = lang === "es" ? "en" : "es";
+      try { localStorage.setItem("es-lang", lang); } catch (_) {}
+      render();
+    });
+
+    render();
+  })();
+  </script>
+</body>
+</html>

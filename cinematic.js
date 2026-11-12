@@ -819,60 +819,60 @@ const FLOW_TXT = {
   es: {
     steps: [
       { key: "occasion", kicker: "Paso 1 · La ocasión", title: "¿Qué celebramos?", auto: true,
-        options: ["Quinceañera", "Boda", "Aniversario", "Día de las Madres", "Cumpleaños", "Tributo", "Mi negocio", "Otra ocasión"] },
+        options: ["Quinceañera", "Boda", "Aniversario", "Día de las Madres", "Cumpleaños", "Navidad", "Te amo / Porque sí", "Tributo", "Mi negocio", "Otra ocasión"] },
       { key: "relation", kicker: "Paso 2 · La persona", title: "¿Para quién es la canción?", auto: false,
         options: ["Mi hija", "Mi hijo", "Mi pareja", "Mi mamá", "Mi papá", "Otro ser querido"] },
       { key: "genre", kicker: "Paso 3 · El sabor", title: "¿Qué género le encanta?", auto: true, custom: true,
-        customPh: "Escríbalo aquí — componemos cualquier estilo",
-        options: ["Vals", "Balada", "Cumbia", "Bachata", "Corrido", "Banda", "Mariachi", "Bolero", "Salsa", "Reggaetón", "Norteño", "Pop", "Otro"] },
+        customPh: "Escríbelo aquí — componemos cualquier estilo",
+        options: ["Salsa", "Bachata", "Merengue", "Reggaetón", "Plena", "Aguinaldo navideño", "Bolero", "Balada", "Vals", "Cumbia", "Corrido", "Banda", "Mariachi", "Norteño", "Pop", "Otro"] },
       { key: "sound", kicker: "Paso 4 · El sonido", title: "¿Cómo debe sentirse la canción?" },
-      { key: "date", kicker: "Paso 5 · La fecha", title: "¿Cuándo es la fiesta?", auto: true,
-        options: ["Esta semana", "Este mes", "Tengo más tiempo"] },
-      { key: "story", kicker: "Paso 6 · Su historia", title: "Cuéntenos su historia" },
-      { key: "contact", kicker: "Paso 7 · Su contacto", title: "¿Dónde le entregamos su canción?" },
-      { key: "final", kicker: "Paso 8 · Su paquete", title: "Revise y elija su paquete" }
+      { key: "date", kicker: "Paso 5 · La fecha", title: "¿Cuándo la necesitas?", auto: true,
+        options: ["En menos de 48 horas", "Esta semana", "Este mes", "Tengo más tiempo"] },
+      { key: "story", kicker: "Paso 6 · Tu historia", title: "Cuéntanos tu historia" },
+      { key: "contact", kicker: "Paso 7 · Tu contacto", title: "¿Dónde te entregamos tu canción?" },
+      { key: "final", kicker: "Paso 8 · Tu paquete", title: "Revisa y elige tu paquete" }
     ],
     back: "← Atrás", next: "Siguiente →", toPay: "Continuar al pago", moment: "Un momento…",
     namePh: "El nombre de esa persona",
-    pickPkg: "Elija su paquete", yourStory: "Su historia",
-    storyPh: "Un recuerdo, una anécdota, lo que quiere que diga la canción… (opcional)",
-    payNote: "Pago seguro con Stripe — tarjeta, Apple Pay o Google Pay. Su historia se guarda con su pedido.",
-    emailLbl: "Correo electrónico", emailPh: "su@correo.com",
-    emailHelp: "Aquí le llega su canción terminada.",
-    phoneLbl: "WhatsApp", phonePh: "(407) 555-0123",
-    phoneHelp: "Para avances y por si necesitamos un detalle de su historia. Si no es de EE. UU., incluya el código de país (+52, +57…).",
-    contactNote: "Solo lo usamos para su pedido. Nada de spam.",
-    emailBad: "Revise su correo: parece incompleto.", phoneBad: "Revise el número: necesitamos al menos 10 dígitos.",
-    emailSuggest: "¿Quiso decir", recapDeliver: "Entrega a:",
+    pickPkg: "Elige tu paquete", yourStory: "Tu historia",
+    storyPh: "Un recuerdo, una anécdota, lo que quieres que diga la canción… (opcional)",
+    payNote: "Pago seguro con Stripe — tarjeta, Apple Pay o Google Pay. Tu historia se guarda con tu pedido.",
+    emailLbl: "Correo electrónico", emailPh: "tu@correo.com",
+    emailHelp: "Aquí te llega tu canción terminada.",
+    phoneLbl: "WhatsApp", phonePh: "(787) 555-0123",
+    phoneHelp: "Para avances y por si necesitamos un detalle de tu historia. Si no es de EE. UU. o Puerto Rico, incluye el código de país (+52, +57…).",
+    contactNote: "Solo lo usamos para tu pedido. Nada de spam.",
+    emailBad: "Revisa tu correo: parece incompleto.", phoneBad: "Revisa el número: necesitamos al menos 10 dígitos.",
+    emailSuggest: "¿Quisiste decir", recapDeliver: "Entrega a:",
     nickPh: "Apodo o cómo le dicen (opcional)",
     fromPh: "¿De parte de quién? Ej.: Mamá y Papá",
     moodLbl: "El ánimo", moodOpts: ["Emotiva", "Romántica", "Alegre / de fiesta", "Divertida", "Nostálgica"],
     voiceLbl: "La voz", voiceOpts: ["Voz de mujer", "Voz de hombre", "Sin preferencia"],
     langLbl: "El idioma de la canción", langOpts: ["Español", "Inglés", "Ambos"],
-    storyIntro: "Entre más nos cuente, más suya será la canción. Escriba como habla: no importa la ortografía.",
+    storyIntro: "Mientras más nos cuentes, más tuya será la canción. Escribe como hablas: no importa la ortografía.",
     memLbl: "Un recuerdo especial", memPh: "¿Cómo se conocieron? ¿Un momento que nunca olvidan?",
-    specialLbl: "¿Qué hace especial a esta persona?", specialPh: "Su forma de ser, lo que más admira, lo que la hace única…",
+    specialLbl: "¿Qué hace especial a esta persona?", specialPh: "Su forma de ser, lo que más admiras, lo que la hace única…",
     phrasesLbl: "Frases, dichos o chistes internos", phrasesPh: "Algo que siempre dice, una frase que debe sonar tal cual…",
     namesLbl: "Otros nombres que deben sonar", namesPh: "Hermanos, abuelos, mascotas… y cómo se pronuncian si es difícil",
     avoidLbl: "Algo que NO debe aparecer", avoidPh: "Temas, nombres o palabras a evitar",
-    skipTitle: "Estos detalles hacen su canción única.",
-    skipBody: "Falta: {list}. Puede continuar, pero con ellos la canción suena a ustedes y no a cualquiera.",
+    skipTitle: "Estos detalles hacen tu canción única.",
+    skipBody: "Falta: {list}. Puedes continuar, pero con ellos la canción suena a ustedes y no a cualquiera.",
     skipGo: "Continuar sin ellos",
     skipNames: { from: "de parte de quién", mood: "el ánimo", voice: "la voz", songLang: "el idioma",
                  memory: "un recuerdo", special: "qué la hace especial", phrases: "frases o dichos" },
-    recapDash: "—", recapFor: "para", recapParty: "fiesta:", recapEdit: "Editar mis respuestas",
-    urgentTitle: "Su fiesta es esta semana.",
-    urgentBody: " La entrega estándar tarda 7–10 días y no llegaría a tiempo. Le recomendamos <strong>Gran Gala (entrega 72h)</strong> o escribirnos por WhatsApp para confirmar fechas.",
-    urgentSwap: "Cambiar a Gran Gala (72h)", urgentConfirm: "Entiendo, pagar entrega 7–10 días",
-    fallbackBody: "<strong>Un paso importante:</strong> para que su canción quede encargada, envíenos primero su resumen por WhatsApp — un toque y el mensaje ya va escrito. Después le llevamos al pago.",
+    recapDash: "—", recapFor: "para", recapParty: "la necesitas:", recapEdit: "Editar mis respuestas",
+    urgentTitle: "La necesitas en menos de 48 horas.",
+    urgentBody: " La entrega estándar es de 48 horas y podría no llegar a tiempo. Te recomendamos <strong>Gran Gala (entrega en 24 h)</strong> o escribirnos por WhatsApp para confirmar.",
+    urgentSwap: "Cambiar a Gran Gala (24 h)", urgentConfirm: "Entiendo, pagar entrega en 48 h",
+    fallbackBody: "<strong>Un paso importante:</strong> para que tu canción quede encargada, envíanos primero tu resumen por WhatsApp — un toque y el mensaje ya va escrito. Después te llevamos al pago.",
     fallbackWa: "Enviar mi resumen por WhatsApp", fallbackPaid: "Ya lo envié — continuar al pago",
-    pkgTags: ["", "La más pedida", "Urgente 72h"],
+    pkgTags: ["", "La más pedida", "Prioridad 24 h"],
     pkgIncludes: [
-      "Canción corta · Letra de su historia · MP3 · Entrega estándar (7–10 días)",
-      "Canción completa (2–3 min) · Producción de estudio · MP3 + WAV · 1 revisión · Entrega 7–10 días",
-      "Experiencia narrativa completa · Producción premium · MP3 + WAV + letra enmarcable · Revisiones múltiples · Entrega urgente 72h"
+      "Canción corta · Letra de tu historia · MP3 · 1 revisión · Entrega en 48 h",
+      "Canción completa (2–3 min) · Producción de estudio · MP3 + WAV · 1 revisión · Entrega en 48 h",
+      "Experiencia narrativa completa · Producción premium · MP3 + WAV + letra enmarcable · Revisiones múltiples · Entrega prioritaria en 24 h"
     ],
-    wa: { greeting: "¡Hola! Quiero crear una canción personalizada 🎶", occasion: "Ocasión", forWhom: "Para", genre: "Género", party: "La fiesta es", pkg: "Paquete", story: "Nuestra historia", order: "Pedido", email: "Correo",
+    wa: { greeting: "¡Hola! Quiero crear una canción personalizada 🎶", occasion: "Ocasión", forWhom: "Para", genre: "Género", party: "La necesito", pkg: "Paquete", story: "Nuestra historia", order: "Pedido", email: "Correo",
       nick: "Apodo", from: "De parte de", mood: "Ánimo", voice: "Voz", songLang: "Idioma de la canción",
       special: "Qué la hace especial", phrases: "Frases", names: "Otros nombres", avoid: "Evitar" },
     readoutLive: "ESCENA GENERATIVA · EN VIVO"
@@ -880,15 +880,15 @@ const FLOW_TXT = {
   en: {
     steps: [
       { key: "occasion", kicker: "Step 1 · The occasion", title: "What are we celebrating?", auto: true,
-        options: ["Quinceañera", "Wedding", "Anniversary", "Mother's Day", "Birthday", "Tribute", "My business", "Other occasion"] },
+        options: ["Quinceañera", "Wedding", "Anniversary", "Mother's Day", "Birthday", "Christmas", "I love you / Just because", "Tribute", "My business", "Other occasion"] },
       { key: "relation", kicker: "Step 2 · The person", title: "Who is the song for?", auto: false,
         options: ["My daughter", "My son", "My partner", "My mom", "My dad", "Another loved one"] },
       { key: "genre", kicker: "Step 3 · The flavor", title: "What genre do they love?", auto: true, custom: true,
         customPh: "Type it here — we compose any style",
-        options: ["Waltz", "Ballad", "Cumbia", "Bachata", "Corrido", "Banda", "Mariachi", "Bolero", "Salsa", "Reggaeton", "Norteño", "Pop", "Other"] },
+        options: ["Salsa", "Bachata", "Merengue", "Reggaeton", "Plena", "Christmas aguinaldo", "Bolero", "Ballad", "Waltz", "Cumbia", "Corrido", "Banda", "Mariachi", "Norteño", "Pop", "Other"] },
       { key: "sound", kicker: "Step 4 · The sound", title: "How should the song feel?" },
-      { key: "date", kicker: "Step 5 · The date", title: "When is the party?", auto: true,
-        options: ["This week", "This month", "I have more time"] },
+      { key: "date", kicker: "Step 5 · The date", title: "When do you need it?", auto: true,
+        options: ["Within 48 hours", "This week", "This month", "I have more time"] },
       { key: "story", kicker: "Step 6 · Your story", title: "Tell us your story" },
       { key: "contact", kicker: "Step 7 · Your contact", title: "Where should we deliver your song?" },
       { key: "final", kicker: "Step 8 · Your package", title: "Review & choose your package" }
@@ -921,19 +921,19 @@ const FLOW_TXT = {
     skipGo: "Continue without them",
     skipNames: { from: "who it's from", mood: "the mood", voice: "the voice", songLang: "the language",
                  memory: "a memory", special: "what makes them special", phrases: "phrases or sayings" },
-    recapDash: "—", recapFor: "for", recapParty: "party:", recapEdit: "Edit my answers",
-    urgentTitle: "Your party is this week.",
-    urgentBody: " Standard delivery takes 7–10 days and wouldn't arrive in time. We recommend <strong>Gran Gala (72h delivery)</strong> or messaging us on WhatsApp to confirm dates.",
-    urgentSwap: "Switch to Gran Gala (72h)", urgentConfirm: "I understand, pay for 7–10 day delivery",
+    recapDash: "—", recapFor: "for", recapParty: "needed:", recapEdit: "Edit my answers",
+    urgentTitle: "You need it within 48 hours.",
+    urgentBody: " Standard delivery takes 48 hours and may not arrive in time. We recommend <strong>Gran Gala (24h delivery)</strong> or messaging us on WhatsApp to confirm.",
+    urgentSwap: "Switch to Gran Gala (24h)", urgentConfirm: "I understand, pay for 48h delivery",
     fallbackBody: "<strong>One important step:</strong> to place your song order, first send us your summary on WhatsApp — one tap and the message is already written. Then we'll take you to payment.",
     fallbackWa: "Send my summary on WhatsApp", fallbackPaid: "I sent it — continue to payment",
-    pkgTags: ["", "Most popular", "Rush 72h"],
+    pkgTags: ["", "Most popular", "Priority 24h"],
     pkgIncludes: [
-      "Short song · Lyrics from your story · MP3 · Standard delivery (7–10 days)",
-      "Full song (2–3 min) · Studio production · MP3 + WAV · 1 revision · 7–10 day delivery",
-      "Full narrative experience · Premium production · MP3 + WAV + frameable lyrics · Multiple revisions · 72h rush delivery"
+      "Short song · Lyrics from your story · MP3 · 1 revision · 48h delivery",
+      "Full song (2–3 min) · Studio production · MP3 + WAV · 1 revision · 48h delivery",
+      "Full narrative experience · Premium production · MP3 + WAV + frameable lyrics · Multiple revisions · 24h priority delivery"
     ],
-    wa: { greeting: "Hi! I'd like to create a personalized song 🎶", occasion: "Occasion", forWhom: "For", genre: "Genre", party: "The party is", pkg: "Package", story: "Our story", order: "Order", email: "Email",
+    wa: { greeting: "Hi! I'd like to create a personalized song 🎶", occasion: "Occasion", forWhom: "For", genre: "Genre", party: "Needed", pkg: "Package", story: "Our story", order: "Order", email: "Email",
       nick: "Nickname", from: "From", mood: "Mood", voice: "Voice", songLang: "Song language",
       special: "What makes them special", phrases: "Phrases", names: "Other names", avoid: "Avoid" },
     readoutLive: "GENERATIVE SCENE · LIVE"
@@ -953,7 +953,7 @@ const optText = (k) => {
   }
   return step.options[i];
 };
-const isUrgentDate = () => flowState.dateIdx === 0; // 0 = "Esta semana" / "This week"
+const isUrgentDate = () => flowState.dateIdx === 0; // 0 = "En menos de 48 horas" / "Within 48 hours"
 const selectedPkg = () => PKGS.find(p => flowState.pkg.startsWith(p.name));
 
 /* Contacto: sin un correo y un WhatsApp válidos no se puede entregar la canción,
@@ -961,7 +961,7 @@ const selectedPkg = () => PKGS.find(p => flowState.pkg.startsWith(p.name));
 const validEmail = (e) => /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)*\.[a-z]{2,}$/i.test(String(e || "").trim());
 const phoneDigits = (ph) => String(ph || "").replace(/\D/g, "");
 const validPhone = (ph) => { const n = phoneDigits(ph).length; return n >= 10 && n <= 15; };
-/* errores de dominio más comunes → sugerencia de un toque ("¿Quiso decir …@gmail.com?") */
+/* errores de dominio más comunes → sugerencia de un toque ("¿Quisiste decir …@gmail.com?") */
 const EMAIL_FIX = {
   "gmial.com": "gmail.com", "gmal.com": "gmail.com", "gamil.com": "gmail.com", "gmai.com": "gmail.com",
   "gnail.com": "gmail.com", "gmail.co": "gmail.com", "gmail.con": "gmail.com", "gmail.cm": "gmail.com",

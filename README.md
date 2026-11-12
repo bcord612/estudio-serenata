@@ -66,7 +66,7 @@ powershell -ExecutionPolicy Bypass -File serve.ps1
 ## Pendientes antes de lanzar
 
 - [ ] Decidir el nombre final y comprar dominio (ver conversación de marcas)
-- [ ] Reemplazar testimonios ilustrativos por clientes reales
+- [x] Testimonios ilustrativos quitados del sitio — nov 11 2026. Agregar reseñas reales (con permiso) cuando existan.
 - [x] Subir muestras MP3 reales (vals / cumbia / balada) — jul 2026:
       "Mi Niña, Mi Reina" 4:26 · "Cincuenta Primaveras" 3:10 ·
       "Veinte Otoños" 3:53 (convertidas de WAV a MP3 192 kbps)
@@ -113,3 +113,19 @@ powershell -ExecutionPolicy Bypass -File serve.ps1
       407.205.7707 (provisional, centralizado en `WA_NUMBER` de cinematic.js;
       los tres enlaces estáticos de index.html también apuntan ahí)
 - [ ] Versión en inglés en `/en/` con etiquetas hreflang
+
+## Novedades nov 11 2026 (tras estudiar ForeverSongs)
+
+- Registro "tú" en todo el sitio, el formulario y /gracias.
+- Entrega: 48 h estándar (Verso y Serenata), 24 h prioritaria (Gran Gala). El paso
+  "La fecha" ahora tiene "En menos de 48 horas" como opción urgente (índice 0).
+- Transparencia: el sitio dice que las canciones se hacen con herramientas de IA y
+  que una persona revisa cada una (FAQ, paso 2, meta description, términos).
+- Reembolso: revisiones primero; reembolso del 100% si se pide dentro de 14 días
+  de la entrega. Verso ahora incluye 1 revisión.
+- Páginas nuevas: /privacidad y /terminos (ES/EN), enlazadas en el pie.
+- Géneros y ocasiones para PR/Miami: salsa, merengue, plena, aguinaldo navideño;
+  ocasiones Navidad y "Te amo / Porque sí". og:locale es_US.
+- Quitada la nota de desarrollador sobre `audio/*.mp3` (los MP3 reales ya existen).
+- [ ] Revisar que las descripciones de los productos en Stripe no prometan 7–10 días.
+- [ ] Que un abogado revise /privacidad y /terminos; agregar un correo de contacto.
